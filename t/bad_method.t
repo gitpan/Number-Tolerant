@@ -1,9 +1,19 @@
-use Test::More tests => 8;
+use Test::More tests => 10;
 
 use strict;
 use warnings;
 
 use_ok("Number::Tolerant");
+
+## this test right here... it used to test for a bad method
+## but it ain't like that no more
+## a tolerance of a number is that number
+## and that's just the way it is.
+is(
+	Number::Tolerant->new(5),
+	5,
+	"constants return constants"
+);
 
 is(
 	Number::Tolerant->new(5 => 'thingie' => 0.5),
@@ -36,9 +46,15 @@ is(
 );
 
 is(
-	Number::Tolerant->new(5),
+	Number::Tolerant->new('things'),
 	undef,
-	"single param only OK for infinite"
+	"single, non-numeric argument"
+);
+
+is(
+	Number::Tolerant->new(''),
+	undef,
+	"single, pseudo-numeric argument"
 );
 
 is(

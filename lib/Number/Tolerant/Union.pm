@@ -1,5 +1,5 @@
 package Number::Tolerant::Union;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.5 $ =~ /(\d+)/g;
+our $VERSION = "1.10";
 
 use strict;
 use warnings;
@@ -7,6 +7,10 @@ use warnings;
 =head1 NAME
 
 Number::Tolerant::Union -- unions of tolerance ranges
+
+=head1 VERSION
+
+ $Id$
 
 =head1 SYNOPSIS
 

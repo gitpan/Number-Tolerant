@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.16 $ =~ /(\d+)/g;
+our $VERSION = "1.20";
 
 use strict;
 use warnings;
@@ -7,9 +7,15 @@ use warnings;
 use base qw(Exporter);
 our @EXPORT = qw(tolerance);
 
+use Carp;
+
 =head1 NAME
 
 Number::Tolerant -- tolerance ranges for inexact numbers
+
+=head1 VERSION
+
+ $Id$
 
 =head1 SYNOPSIS
 
@@ -103,9 +109,59 @@ sub new {
 	my $class = shift;
 	return unless @_;
 	unshift @_, undef if $_[0] and $_[0] eq 'infinite';
+	return $_[0] if @_==1 and $_[0] =~ $class->_number_re;
 	return unless my @self = $class->_values(@_[1,0,2]) ;
 	return $self[0] if @self == 1;
 	bless { @self } => $class;
+}
+
+=head3 C<< from_string($stringification) >>
+
+A new tolerance can be instantiated from the stringification of an old
+tolerance.  For example:
+
+ my $range = Number::Tolerant->from_string("10 to 12");
+
+ die "Everything's OK!" if 11 == $range; # program dies of joy
+
+This will I<not> yet parse stringified unions, but that will be implemented in
+the future.  (I just don't need it yet.)
+
+=cut
+
+sub from_string {
+	my ($class, $string) = @_;
+	croak "from_string is a class method" if ref $class;
+
+	if (my @params = $class->_parse_string("$string")) {
+		return $class->new(@params);
+	} else {
+		return;
+	}
+}
+
+sub _number_re { qr/([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?/ }
+
+sub _parse_string {
+	my ($class, $string) = @_;
+
+	my $number = $class->_number_re;
+
+	return ($1)
+		if $string =~ m!\A($number)\Z!;
+	return ($1, 'plus_or_minus', $6)
+		if $string =~ m!\A($number) \+/- ($number)\Z!;
+	return ($1, 'plus_or_minus_pct', $6)
+		if $string =~ m!\A($number) \+/- ($number)%\Z!;
+	return ($1, 'or_more')
+		if $string =~ m!\A($number) or more\Z!;
+	return ($1, 'or_less')
+		if $string =~ m!\A($number) or less\Z!;
+	return ($1, 'to', $6)
+		if $string =~ m!\A($number) to ($number)\Z!;
+	return ('infinite')
+		if $string =~ m!\Aany number\Z!;
+	return;
 }
 
 sub _stringify {
@@ -252,6 +308,8 @@ use overload
 =back
 
 =head1 TODO
+
+Extend C<from_string> to cover unions.
 
 Allow translation into forms not originally used:
 

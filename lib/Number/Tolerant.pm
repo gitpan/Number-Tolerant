@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.9 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.10 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -54,9 +54,10 @@ at present:
   or_more           | x to Inf
   or_less           | x to -Inf
   to                | x to y
-	infinite          | -Inf to Inf
+  infinite          | -Inf to Inf
 
-For C<or_less> and C<or_more>, C<$y> is ignored if passed.
+For C<or_less> and C<or_more>, C<$y> is ignored if passed.  For C<infinite>,
+C<$x> and C<$y> are both ignored, if passed.
 
 =cut
 
@@ -156,7 +157,7 @@ sub union {
 		$max = $_[0]->{max} || $_[1]->{max};
 	}
 
-	return () unless defined $min || defined $max;
+	return tolerance('infinite') unless defined $min || defined $max;
 	return tolerance($min => 'or_more') unless defined $max;
 	return tolerance($max => 'or_less') unless defined $min;
 	return tolerance($min => to => $max);
@@ -177,9 +178,10 @@ infinite ranges numify to their fixed end.
 
 A tolerance stringifies to a short description of itself.
 
- to      - "x to y"
- or_more - "x or more"
- or_less - "x or less"
+ infinite - "any number"
+ to       - "x to y"
+ or_more  - "x or more"
+ or_less  - "x or less"
  plus_or_minus     - "x +/- y"
  plus_or_minus_pct - "x +/- y%"
 
@@ -231,7 +233,7 @@ use overload
 
 =head1 TODO
 
-Overload | to create multiple range options.
+Overload | (bitwise or) to create multiple range options.
 
 Allow translation into forms not originally used:
 

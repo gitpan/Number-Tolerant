@@ -1,3 +1,8 @@
+1.010 2005-07-06 22:36
+	* better documentation for infinite tolerances
+	* infinite & infinite yields infinite
+	* more tests!
+	* POD formatting error
 1.009 2005-07-06 16:21
 	* POD formatting error
 1.008 2005-07-06 16:18

@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = "1.32";
+our $VERSION = "1.34";
 
 use strict;
 use warnings;
@@ -15,9 +15,9 @@ Number::Tolerant -- tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.32
+version 1.34
 
- $Id: Tolerant.pm,v 1.22 2004/08/23 13:28:15 rjbs Exp $
+ $Id: Tolerant.pm,v 1.23 2004/08/24 19:48:16 rjbs Exp $
 
 =head1 SYNOPSIS
 
@@ -78,7 +78,7 @@ sub _number_re { $number }
 
 my %tolerance_type = (
 	constant          => {
-		construct => sub { { value => $_[0], min => $_[0], max => $_[0] } },
+		construct => sub { $_[0] },
 		parse     => sub { $_[0] if ($_[0] =~ m!\A($number)\Z!) },
 		# stringify not needed; constants must never be blessed
 		valid_args=> sub {
@@ -202,9 +202,19 @@ sub new {
 		next unless $tolerance_type{$type}->{valid_args};
 		next unless my @args =  $tolerance_type{$type}->{valid_args}->(@_);
 		my $guts = $tolerance_type{$type}->{construct}->(@args);
-		return $guts->{value} if
+
+		$guts = $tolerance_type{$type}->{construct}->(@args);
+
+		return $guts unless ref $guts;
+
+		if (
 			defined $guts->{min} and defined $guts->{max} and
-			$guts->{min} == $guts->{max};
+			$guts->{min} == $guts->{max} and
+			not $guts->{constant}
+		) { 
+			@_ = ($class, $guts->{min});
+			goto &new;
+		}
 		$self = { method => $type, %$guts };
 		last;
 	}

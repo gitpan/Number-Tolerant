@@ -6,11 +6,13 @@ Makefile.PL
 
 lib/Number/Tolerant.pm
 lib/Number/Tolerant/Union.pm
+lib/Number/Tolerant/Constant.pm
 
 t/00.load.t
 t/and_constant.t
 t/and_tolerance.t
 t/bad_method.t
+t/constant.t
 t/from_string.t
 t/infinite.t
 t/or_less.t

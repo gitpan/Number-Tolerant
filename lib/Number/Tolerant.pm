@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.11 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.12 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -140,6 +140,11 @@ sub num_lte {
 		: (defined $_[0]->{max} ? $_[1] >= $_[0]->{max} : undef)
 }
 
+sub union {
+	require Number::Tolerant::Union;
+	return Number::Tolerant::Union->new($_[0],$_[1]);
+}
+
 sub intersection {
 	return $_[0] == $_[1] ? $_[1] : () unless ref $_[1];
 
@@ -163,7 +168,7 @@ sub intersection {
 	return tolerance($min => to => $max);
 }
 
-=head2 Overloading
+=head3 Overloading
 
 Tolerances overload a few operations, mostly comparisons.
 
@@ -216,6 +221,12 @@ If the given values have no intersection, C<()> is returned.
 An intersection with a normal number will yield that number, if it is within
 the tolerance.
 
+=item tolerance union
+
+A tolerance C<|> a tolerance or number is the union of the two.  Unions allow
+multiple tolerances, whether they intersect or not, to be treated as one.  See
+L<Number::Tolerant::Union> for more information.
+
 =cut
 
 use overload
@@ -227,13 +238,12 @@ use overload
 	'<'  => \&num_lt,
 	'>=' => \&num_gte,
 	'<=' => \&num_lte,
+	'|'  => \&union,
 	'&'  => \&intersection;
 
 =back
 
 =head1 TODO
-
-Overload | (bitwise or) to create multiple range options (unions).
 
 Allow translation into forms not originally used:
 

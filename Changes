@@ -1,3 +1,6 @@
+1.012 2005-07-20 15:35
+	* add Union.pm
+	* enable |-overloaded union of ranges
 1.011 2005-07-19 14:55
 	* fix misuse of "union"
 1.010 2005-07-06 22:36

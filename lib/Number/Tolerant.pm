@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.7 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.9 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -54,6 +54,7 @@ at present:
   or_more           | x to Inf
   or_less           | x to -Inf
   to                | x to y
+	infinite          | -Inf to Inf
 
 For C<or_less> and C<or_more>, C<$y> is ignored if passed.
 
@@ -61,6 +62,7 @@ For C<or_less> and C<or_more>, C<$y> is ignored if passed.
 
 sub _args_valid {
 	my ($method, $x, $y) = @_;
+	return 1 if $method eq 'infinite';
 	return unless defined $x;
 	$method =~ /^(plus|to)/ and return unless defined $y;
 	return 1;
@@ -73,7 +75,8 @@ sub _arg_handler {
 		plus_or_minus_pct => sub { $_[0], $_[1], $_[0] - $_[0]*($_[1]/100), $_[0] + $_[0]*($_[1]/100) },
 		or_more           => sub { $_[0], undef, $_[0], undef },
 		or_less           => sub { $_[0], undef, undef, $_[0] },
-		to                => sub { ($_[0],$_[1]) = sort ($_[0],$_[1]); ($_[0]+$_[1])/2, $_[1] - ($_[0]+$_[1])/2, $_[0], $_[1] }
+		to                => sub { ($_[0],$_[1]) = sort ($_[0],$_[1]); ($_[0]+$_[1])/2, $_[1] - ($_[0]+$_[1])/2, $_[0], $_[1] },
+		infinite          => sub { 0, undef, undef, undef },
 	);
 	return $methods{$method};
 }
@@ -83,8 +86,8 @@ sub values {
 	return unless _args_valid($method, $x, $y);
 	return unless my $handler = _arg_handler($method);
 	my %return;
-	@return{qw(method value tolerance min max)} = ($method, $handler->($x,$y));
-	return $return{value} if defined $return{tolerance} and not $return{tolerance};
+	@return{qw(method value variance min max)} = ($method, $handler->($x,$y));
+	return $return{value} if defined $return{variance} and not $return{variance};
 	%return;
 }
 
@@ -92,6 +95,7 @@ sub tolerance { __PACKAGE__->new(@_); }
 
 sub new {
 	my $class = shift;
+	unshift @_, undef if $_[0] eq 'infinite';
 	return unless my @self = $class->values(@_[1,0,2]) ;
 	return $self[0] if @self == 1;
 	bless { @self } => $class;
@@ -99,11 +103,12 @@ sub new {
 
 sub stringify {
 	my %strings = (
-		plus_or_minus     => sub { "$_[0]->{value} +/- $_[0]->{tolerance}"  },
-		plus_or_minus_pct => sub { "$_[0]->{value} +/- $_[0]->{tolerance}%" },
+		plus_or_minus     => sub { "$_[0]->{value} +/- $_[0]->{variance}"  },
+		plus_or_minus_pct => sub { "$_[0]->{value} +/- $_[0]->{variance}%" },
 		or_more           => sub { "$_[0]->{min} or more" },
 		or_less           => sub { "$_[0]->{max} or less" },
 		to                => sub { "$_[0]->{min} to $_[0]->{max}" },
+		infinite          => sub { "any number" },
 	);
 	$strings{$_[0]->{method}}->($_[0]);
 }
@@ -132,6 +137,29 @@ sub num_lte {
 	$_[2]
 		? (defined $_[0]->{min} ? $_[1] <= $_[0]->{min} : undef)
 		: (defined $_[0]->{max} ? $_[1] >= $_[0]->{max} : undef)
+}
+
+sub union {
+	return $_[0] == $_[1] ? $_[1] : () unless ref $_[1];
+
+	my ($min, $max);
+
+	if (defined $_[0]->{min} and defined $_[1]->{min}) {
+		($min) = sort {$b<=>$a}  ($_[0]->{min}, $_[1]->{min});
+	} else {
+		$min = $_[0]->{min} || $_[1]->{min};
+	}
+
+	if (defined $_[0]->{max} and defined $_[1]->{max}) {
+		($max) = sort {$a<=>$b} ($_[0]->{max}, $_[1]->{max});
+	} else {
+		$max = $_[0]->{max} || $_[1]->{max};
+	}
+
+	return () unless defined $min || defined $max;
+	return tolerance($min => 'or_more') unless defined $max;
+	return tolerance($max => 'or_less') unless defined $min;
+	return tolerance($min => to => $max);
 }
 
 =head2 Overloading
@@ -172,6 +200,20 @@ tolerance.
 "...or equal to" comparisons include the min/max values in the permissible
 range, as common sense suggests.
 
+=item tolerance unions
+
+A tolerance C<&> a tolerance or number is the intersection of the two ranges.
+Unions allow you to quickly narrow down a set of tolerances to the most
+stringent intersection of values.
+
+ tolerance(5 => to => 6) & tolerance(5.5 => to => 6.5);
+ # this yields: tolerance(5.5 => to => 6)
+
+If the given values have no intersection, C<()> is returned.
+
+A union with a normal number will yield that number, if it is within the
+tolerance.
+
 =cut
 
 use overload
@@ -182,13 +224,14 @@ use overload
 	'>'  => \&num_gt,
 	'<'  => \&num_lt,
 	'>=' => \&num_gte,
-	'<=' => \&num_lte;
+	'<=' => \&num_lte,
+	'&'  => \&union;
 
 =back
 
 =head1 TODO
 
-Overload & to create an intersection of allowed values.
+Overload | to create multiple range options.
 
 Allow translation into forms not originally used:
 

@@ -1,3 +1,10 @@
+1.009 2005-07-06 16:21
+	* POD formatting error
+1.008 2005-07-06 16:18
+  * add 'infinite' method (still sketchy)
+	* add & operator overloading
+	* add tests for the above
+	* fix some test formatting errors
 1.007	2004-07-01 23:05
 	* refactored awful "values" sub (it's still ugly)
 	* return simple scalars when tolerance == 0

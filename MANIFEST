@@ -5,8 +5,9 @@ Changes
 Makefile.PL
 
 lib/Number/Tolerant.pm
-lib/Number/Tolerant/Union.pm
+lib/Number/Tolerant/BasicTypes.pm
 lib/Number/Tolerant/Constant.pm
+lib/Number/Tolerant/Union.pm
 
 t/00.load.t
 t/and_constant.t

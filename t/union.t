@@ -21,7 +21,7 @@ is_deeply(
 	' ... options are as requested'
 );
 
-is("$choice", '(4.5 to 5.25) or (5.75 to 6.25)', ' ... stringifies');
+is("$choice", '(4.5 <= x <= 5.25) or (5.75 <= x <= 6.25)', ' ... stringifies');
 
 {
 	no warnings 'uninitialized';

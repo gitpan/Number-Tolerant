@@ -1,4 +1,4 @@
-use Test::More tests => 10;
+use Test::More tests => 17;
 
 use strict;
 use warnings;
@@ -28,6 +28,12 @@ is(
 );
 
 is(
+	Number::Tolerant->new(5 => to => 'life'),
+	undef,
+	"'to' requires two numbers"
+);
+
+is(
 	Number::Tolerant->new(5 => 'plus_or_minus'),
 	undef,
 	"'plus_or_minus' requires two values"
@@ -37,6 +43,30 @@ is(
 	Number::Tolerant->new(5 => 'plus_or_minus_pct'),
 	undef,
 	"'plus_or_minus_pct' requires two values"
+);
+
+is(
+	Number::Tolerant->new(5 => 'plus_or_minus' => 'zero'),
+	undef,
+	"'plus_or_minus' requires two numbers"
+);
+
+is(
+	Number::Tolerant->new(5 => 'plus_or_minus_pct' => 'zero'),
+	undef,
+	"'plus_or_minus_pct' requires two numbers"
+);
+
+is(
+	Number::Tolerant->new(five => 'exactly'),
+	undef,
+	"invalid two-arg construction"
+);
+
+is(
+	Number::Tolerant->new(just_about => 12),
+	undef,
+	"invalid two-arg construction"
 );
 
 is(
@@ -52,6 +82,12 @@ is(
 );
 
 is(
+	Number::Tolerant->new(undef),
+	undef,
+	"single, undefined argument"
+);
+
+is(
 	Number::Tolerant->new(''),
 	undef,
 	"single, pseudo-numeric argument"
@@ -61,4 +97,10 @@ is(
 	Number::Tolerant->new(undef , 'to' , undef),
 	undef,
 	"undef-undef range not valid (should it be?)"
+);
+
+is(
+	Number::Tolerant->new('string' => 'broken' => 'args'),
+	undef,
+	"three invalid params"
 );

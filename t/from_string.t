@@ -1,4 +1,4 @@
-use Test::More 'no_plan';
+use Test::More tests => 17;
 
 use strict;
 use warnings;
@@ -17,17 +17,39 @@ BEGIN { use_ok("Number::Tolerant"); }
 
 { # or_less
 	my $tol = Number::Tolerant->from_string("10 or less");
-	is($tol, "10 or less", "or_less");
+	is($tol, "x <= 10", "or_less");
+	undef $tol;
+	   $tol = Number::Tolerant->from_string("<= 10");
+	is($tol, "x <= 10", "or_less");
+}
+
+{ # less_than
+	my $tol = Number::Tolerant->from_string("less than 10");
+	is($tol, "x < 10", "or_less");
+	undef $tol;
+	   $tol = Number::Tolerant->from_string("< 10");
+	is($tol, "x < 10", "less_than");
 }
 
 { # or_more
 	my $tol = Number::Tolerant->from_string("10 or more");
-	is($tol, "10 or more", "or_more");
+	is($tol, "10 <= x", "or_more");
+	undef $tol;
+	   $tol = Number::Tolerant->from_string(">= 10");
+	is($tol, "10 <= x", "or_more");
+}
+
+{ # more_than
+	my $tol = Number::Tolerant->from_string("more than 10");
+	is($tol, "10 < x", "or_more");
+	undef $tol;
+	   $tol = Number::Tolerant->from_string("> 10");
+	is($tol, "10 < x", "more_than");
 }
 
 { # x_to_y
 	my $tol = Number::Tolerant->from_string("8 to 12");
-	is($tol, "8 to 12", "to");
+	is($tol, "8 <= x <= 12", "to");
 }
 
 

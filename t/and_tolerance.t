@@ -1,4 +1,4 @@
-use Test::More tests => 73;
+use Test::More tests => 89;
 
 use strict;
 use warnings;
@@ -16,13 +16,10 @@ BEGIN { use_ok("Number::Tolerant"); }
 
 	isa_ok($range,   'Number::Tolerant', 'intersection');
 
-	is("$range", '40 to 50', ' ... stringifies');
-	is(0+$range,         45, ' ... numifies to 45');
+	is("$range", '40 <= x <= 50', ' ... stringifies');
 
 	is($range->{min},      40, ' ... minimum : 40');
 	is($range->{max},      50, ' ... maximum : 50');
-	is($range->{value},    45, ' ... value   : 45');
-	is($range->{variance},  5, ' ... variance:  5');
 }
 
 { # x_to_y & x_or_more
@@ -36,13 +33,10 @@ BEGIN { use_ok("Number::Tolerant"); }
 
 	isa_ok($range,   'Number::Tolerant', 'intersection');
 
-	is("$range", '40 to 50', ' ... stringifies');
-	is(0+$range,         45, ' ... numifies to 45');
+	is("$range", '40 <= x <= 50', ' ... stringifies');
 
 	is($range->{min},      40, ' ... minimum : 40');
 	is($range->{max},      50, ' ... maximum : 50');
-	is($range->{value},    45, ' ... value   : 45');
-	is($range->{variance},  5, ' ... variance:  5');
 }
 
 { # x_or_more & x_or_more
@@ -56,13 +50,10 @@ BEGIN { use_ok("Number::Tolerant"); }
 
 	isa_ok($range,   'Number::Tolerant', 'intersection');
 
-	is("$range", '40 or more', ' ... stringifies');
-	is(0+$range,           40, ' ... numifies to 40');
+	is("$range", '40 <= x', ' ... stringifies');
 
 	is($range->{min},         40, ' ... minimum : 40');
 	is($range->{max},      undef, ' ... maximum : undef');
-	is($range->{value},       40, ' ... value   : 40');
-	is($range->{variance}, undef, ' ... variance: undef');
 }
 
 { # x_or_less & x_or_less
@@ -76,13 +67,119 @@ BEGIN { use_ok("Number::Tolerant"); }
 
 	isa_ok($range,   'Number::Tolerant', 'intersection');
 
-	is("$range", '30 or less', ' ... stringifies');
-	is(0+$range,           30, ' ... numifies to 30');
+	is("$range", 'x <= 30', ' ... stringifies');
 
 	is($range->{min},      undef, ' ... minimum : undef');
 	is($range->{max},         30, ' ... maximum : 30');
-	is($range->{value},       30, ' ... value   : 30');
-	is($range->{variance}, undef, ' ... variance: undef');
+}
+
+{ # x_or_more & more_than_x
+	my $demand = Number::Tolerant->new(40 => 'or_more');
+	my $offer  = Number::Tolerant->new(30 => 'more_than');
+
+	isa_ok($demand, 'Number::Tolerant');
+	isa_ok($offer,  'Number::Tolerant');
+
+	my $range = $demand & $offer;
+
+	isa_ok($range,   'Number::Tolerant', 'intersection');
+
+	is("$range", '40 <= x', ' ... stringifies');
+
+	is($range->{min},         40, ' ... minimum : undef');
+	is($range->{max},      undef, ' ... maximum : 30');
+}
+
+{ # more_than_x & x_or_more
+	my $demand = Number::Tolerant->new(30 => 'or_more');
+	my $offer  = Number::Tolerant->new(40 => 'more_than');
+
+	isa_ok($demand, 'Number::Tolerant');
+	isa_ok($offer,  'Number::Tolerant');
+
+	my $range = $offer & $demand;
+
+	isa_ok($range,   'Number::Tolerant', 'intersection');
+
+	is("$range", '40 < x', ' ... stringifies');
+
+	is($range->{min},         40, ' ... minimum : 40');
+	is($range->{max},      undef, ' ... maximum : undef');
+}
+
+{ # x_or_more & more_than_x
+	my $demand = Number::Tolerant->new(30 => 'or_more');
+	my $offer  = Number::Tolerant->new(40 => 'more_than');
+
+	isa_ok($demand, 'Number::Tolerant');
+	isa_ok($offer,  'Number::Tolerant');
+
+	my $range = $demand & $offer;
+
+	isa_ok($range,   'Number::Tolerant', 'intersection');
+
+	is("$range", '40 < x', ' ... stringifies');
+
+	is($range->{min},         40, ' ... minimum : 40');
+	is($range->{max},      undef, ' ... maximum : undef');
+}
+
+{ # x_or_less & less_than_x
+	my $demand = Number::Tolerant->new(40 => 'or_less');
+	my $offer  = Number::Tolerant->new(30 => 'less_than');
+
+	isa_ok($demand, 'Number::Tolerant');
+	isa_ok($offer,  'Number::Tolerant');
+
+	my $range = $demand & $offer;
+
+	isa_ok($range,   'Number::Tolerant', 'intersection');
+
+	is("$range", 'x < 30', ' ... stringifies');
+
+	is($range->{min},      undef, ' ... minimum : undef');
+	is($range->{max},         30, ' ... maximum : 30');
+}
+
+{ # less_than_x & x_or_less
+	my $demand = Number::Tolerant->new(40 => 'or_less');
+	my $offer  = Number::Tolerant->new(30 => 'less_than');
+
+	isa_ok($demand, 'Number::Tolerant');
+	isa_ok($offer,  'Number::Tolerant');
+
+	my $range = $offer & $demand;
+
+	isa_ok($range,   'Number::Tolerant', 'intersection');
+
+	is("$range", 'x < 30', ' ... stringifies');
+
+	is($range->{min},      undef, ' ... minimum : undef');
+	is($range->{max},         30, ' ... maximum : 30');
+}
+
+
+TODO: { # less_than_x & more_than_x
+	local $TODO = "intersections with excluded endpoints aren't done";
+	my $demand = Number::Tolerant->new(40 => 'less_than');
+	my $offer  = Number::Tolerant->new(30 => 'more_than');
+
+	isa_ok($demand, 'Number::Tolerant');
+	isa_ok($offer,  'Number::Tolerant');
+
+	my $range = $demand & $offer;
+
+	isa_ok($range,   'Number::Tolerant', 'intersection');
+
+	is("$range",   '30 <= x <= 40', ' ... stringifies');
+
+	is($range->{min},         30, ' ... minimum : undef');
+	is($range->{max},         40, ' ... maximum : 30');
+	is($range->{exclude_min},  1, ' ... exclude minimum');
+	is($range->{exclude_max},  1, ' ... exclude maximum');
+
+	cmp_ok($range, '==', 31, "31 is inside range");
+	cmp_ok($range, '!=', 30, "30 is outside range");
 }
 
 { # x_to_y & x_or_less
@@ -96,13 +193,10 @@ BEGIN { use_ok("Number::Tolerant"); }
 
 	isa_ok($range,   'Number::Tolerant', 'intersection');
 
-	is("$range", '40 to 50', ' ... stringifies');
-	is(0+$range,         45, ' ... numifies to 45');
+	is("$range", '40 <= x <= 50', ' ... stringifies');
 
 	is($range->{min},      40, ' ... minimum : 40');
 	is($range->{max},      50, ' ... maximum : 50');
-	is($range->{value},    45, ' ... value   : 45');
-	is($range->{variance},  5, ' ... variance:  5');
 }
 
 { # x_or_less & x_to_y
@@ -116,13 +210,10 @@ BEGIN { use_ok("Number::Tolerant"); }
 
 	isa_ok($range,   'Number::Tolerant', 'intersection');
 
-	is("$range", '40 to 50', ' ... stringifies');
-	is(0+$range,         45, ' ... numifies to 45');
+	is("$range", '40 <= x <= 50', ' ... stringifies');
 
 	is($range->{min},      40, ' ... minimum : 40');
 	is($range->{max},      50, ' ... maximum : 50');
-	is($range->{value},    45, ' ... value   : 45');
-	is($range->{variance},  5, ' ... variance:  5');
 }
 
 { # x_to_y & infinite
@@ -136,13 +227,10 @@ BEGIN { use_ok("Number::Tolerant"); }
 
 	isa_ok($range,   'Number::Tolerant', 'intersection');
 
-	is("$range", '40 to 60', ' ... stringifies');
-	is(0+$range,         50, ' ... numifies to 45');
+	is("$range", '40 <= x <= 60', ' ... stringifies');
 
 	is($range->{min},      40, ' ... minimum : 40');
 	is($range->{max},      60, ' ... maximum : 50');
-	is($range->{value},    50, ' ... value   : 45');
-	is($range->{variance}, 10, ' ... variance:  5');
 }
 
 { # infinite & infinite
@@ -157,10 +245,7 @@ BEGIN { use_ok("Number::Tolerant"); }
 	isa_ok($range,   'Number::Tolerant', 'intersection');
 
 	is("$range", 'any number', ' ... stringifies');
-	is(0+$range,            0, ' ... numifies to 0');
 
 	is($range->{min},      undef, ' ... minimum : undef');
 	is($range->{max},      undef, ' ... maximum : undef');
-	is($range->{value},        0, ' ... value   : 0');
-	is($range->{variance}, undef, ' ... variance: undef');
 }

@@ -1,14 +1,9 @@
 package Number::Tolerant::Constant;
-our $VERSION = "1.00";
+use base qw(Number::Tolerant);
+our $VERSION = "1.40";
 
 use strict;
 use warnings;
-
-use base qw(Exporter);
-our @EXPORT = qw(tolerance);
-
-use Carp;
-use Number::Tolerant;
 
 =head1 NAME
 
@@ -16,9 +11,9 @@ Number::Tolerant::Constant -- a blessed constant type
 
 =head1 VERSION
 
-version 1.00
+version 1.40
 
- $Id: Constant.pm,v 1.1 2004/08/24 19:49:34 rjbs Exp $
+ $Id: Constant.pm,v 1.3 2004/12/07 20:46:29 rjbs Exp $
 
 =head1 SYNOPSIS
 
@@ -41,15 +36,21 @@ would otherwise complain that the constructor hadn't returned a blessed object.
 
 my $number = Number::Tolerant->_number_re;
 
-Number::Tolerant->_tolerance_type->{constant} = {
-	construct => sub { { value => $_[0], min => $_[0], max => $_[0], constant => 1 } },
-	parse     => sub { $_[0] if ($_[0] =~ m!\A($number)\Z!) },
-	stringify => sub { $_[0]->{value} },
-	valid_args=> sub {
-		return $_[0] if @_==1 and $_[0] =~ $number;
-		return
-	}
+package Number::Tolerant::Type::constant;
+no warnings 'redefine';
+
+sub construct { shift;
+	{ value => $_[0], min => $_[0], max => $_[0], constant => 1 }
 };
+
+sub parse { shift; $_[0] if ($_[0] =~ m!\A($number)\Z!) }
+
+sub stringify { $_[0]->{value} }
+
+sub valid_args { shift;
+	return $_[0] if @_==1 and $_[0] =~ $number;
+	return
+}
 
 =head1 TODO
 

@@ -1,4 +1,4 @@
-use Test::More tests => 65;
+use Test::More tests => 64;
 
 use strict;
 use warnings;
@@ -11,8 +11,7 @@ ok($guess, "created our object: 5 or less");
 
 isa_ok($guess, "Number::Tolerant", " ... ");
 
-is("$guess", "5 or less", " ... stringifies properly");
-is(0+$guess, 5,           " ... numifies properly");
+is("$guess", "x <= 5",    " ... stringifies properly");
 
 ok(0.0 == $guess,         " ... 0.0 is equal to it");
 ok(4.4 == $guess,         " ... 4.4 is equal to it");

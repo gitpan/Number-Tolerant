@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = "1.34";
+our $VERSION = "1.40";
 
 use strict;
 use warnings;
@@ -15,9 +15,9 @@ Number::Tolerant -- tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.34
+version 1.40
 
- $Id: Tolerant.pm,v 1.23 2004/08/24 19:48:16 rjbs Exp $
+ $Id: Tolerant.pm,v 1.29 2004/12/07 20:46:29 rjbs Exp $
 
 =head1 SYNOPSIS
 
@@ -60,136 +60,30 @@ describes the nature of the tolerance.  Tolerances can be defined in five ways,
 at present:
 
   method              range
- -------------------+---------------
+ -------------------+------------------
   plus_or_minus     | x ± y
   plus_or_minus_pct | x ± (y% of x)
   or_more           | x to Inf
   or_less           | x to -Inf
+  more_than         | x to Inf, not x
+  less_than         | x to -Inf, not x
   to                | x to y
   infinite          | -Inf to Inf
 
 For C<or_less> and C<or_more>, C<$y> is ignored if passed.  For C<infinite>,
-neither C<$x> nor C<$y> is used; "infinite" should be the sole argument.
+neither C<$x> nor C<$y> is used; "infinite" should be the sole argument.  The
+first two arguments can be reversed for C<more_than> and C<less_than>, to be
+more English-like.
 
 =cut
 
 my $number = qr/(?:[+-]?)(?=\d|\.\d)\d*(?:\.\d*)?(?:[Ee](?:[+-]?\d+))?/;
 sub _number_re { $number }
 
-my %tolerance_type = (
-	constant          => {
-		construct => sub { $_[0] },
-		parse     => sub { $_[0] if ($_[0] =~ m!\A($number)\Z!) },
-		# stringify not needed; constants must never be blessed
-		valid_args=> sub {
-			return $_[0] if @_==1 and $_[0] =~ $number;
-			return
-		}
-	},
-	plus_or_minus     => {
-		construct => sub {
-			{
-				value => $_[0],
-				variance => $_[1],
-				min => $_[0] - $_[1],
-				max => $_[0] + $_[1]
-			}
-		},
-		parse     => sub {
-			tolerance("$1", 'plus_or_minus', "$2")
-				if ($_[0] =~ m!\A($number) \+/- ($number)\Z!)
-		},
-		stringify => sub { "$_[0]->{value} +/- $_[0]->{variance}"  },
-		valid_args=> sub {
-			return ($_[0],$_[2])
-				if ((grep { defined } @_) == 3)
-				and ($_[0] =~ $number)
-				and ($_[1] eq 'plus_or_minus')
-				and ($_[2] =~ $number);
-			return;
-		}
-	},
-	plus_or_minus_pct => {
-		construct => sub {
-			{
-				value    => $_[0],
-				variance => $_[1],
-				min      => $_[0] - $_[0]*($_[1]/100),
-				max      => $_[0] + $_[0]*($_[1]/100)
-			}
-		},
-		parse     => sub {
-			tolerance("$1", 'plus_or_minus_pct', "$2")
-				if ($_[0] =~ m!\A($number) \+/- ($number)%\Z!) 
-		},
-		stringify => sub { "$_[0]->{value} +/- $_[0]->{variance}%" },
-		valid_args=> sub {
-			return ($_[0],$_[2])
-				if ((grep { defined } @_) == 3)
-				and ($_[0] =~ $number)
-				and ($_[1] eq 'plus_or_minus_pct')
-				and ($_[2] =~ $number);
-			return;
-		}
-	},
-	or_more           => {
-		construct => sub { { value => $_[0], min => $_[0] } },
-		parse     => sub { 
-			tolerance("$1", 'or_more') if ($_[0] =~ m!\A($number) or more\Z!)
-		},
-		stringify => sub { "$_[0]->{min} or more" },
-		valid_args=> sub {
-			return ($_[0])
-				if ((grep { defined } @_) == 2)
-				and ($_[0] =~ $number) and ($_[1] eq 'or_more');
-			return;
-		}
-	},
-	or_less           => {
-		construct => sub { { value => $_[0], max => $_[0] } },
-		parse     => sub {
-			tolerance("$1", 'or_less') if ($_[0] =~ m!\A($number) or less\Z!)
-		},
-		stringify => sub { "$_[0]->{max} or less" },
-		valid_args=> sub {
-			return ($_[0])
-				if ((grep { defined } @_) == 2)
-				and ($_[0] =~ $number) and ($_[1] eq 'or_less');
-			return;
-		}
-	},
-	to                => {
-		construct => sub {
-			($_[0],$_[1]) = sort { $a <=> $b } ($_[0],$_[1]);
-			{
-				value    => ($_[0]+$_[1])/2,
-				variance => $_[1] - ($_[0]+$_[1])/2,
-				min      => $_[0],
-				max      => $_[1]
-			}
-		},
-		parse     => sub {
-			tolerance("$1", 'to', "$2") if ($_[0] =~ m!\A($number) to ($number)\Z!)
-		},
-		stringify => sub { "$_[0]->{min} to $_[0]->{max}" },
-		valid_args=> sub {
-			return ($_[0],$_[2])
-				if ((grep { defined } @_) == 3)
-				and ($_[0] =~ $number) and ($_[1] eq 'to') and ($_[2] =~ $number);
-			return;
-		}
-	},
-	infinite          => {
-		construct => sub { { value => 0 } },
-		parse     => sub { tolerance('infinite') if ($_[0] =~ m!\Aany number\Z!) },
-		stringify => sub { "any number" },
-		valid_args=> sub {
-			return ($_[0]) if @_==1 and defined $_[0] and $_[0] eq 'infinite'; return;
-		}
-	},
-);
+my %tolerance_type = ();
 
 sub _tolerance_type { \%tolerance_type }
+require Number::Tolerant::BasicTypes;
 
 sub tolerance { __PACKAGE__->new(@_); }
 
@@ -199,11 +93,9 @@ sub new {
 	my $self;
 
 	for my $type (keys %tolerance_type) {
-		next unless $tolerance_type{$type}->{valid_args};
-		next unless my @args =  $tolerance_type{$type}->{valid_args}->(@_);
-		my $guts = $tolerance_type{$type}->{construct}->(@args);
-
-		$guts = $tolerance_type{$type}->{construct}->(@args);
+		next unless $type->can('valid_args');
+		next unless my @args = $type->valid_args(@_);
+		my $guts = $type->construct(@args);
 
 		return $guts unless ref $guts;
 
@@ -220,7 +112,7 @@ sub new {
 	}
 
 	return unless $self;
-	bless $self => $class;
+	bless $self => $self->{method};
 }
 
 =head3 C<< from_string($stringification) >>
@@ -241,42 +133,58 @@ sub from_string {
  	my ($class, $string) = @_;
  	croak "from_string is a class method" if ref $class;
 	for my $type (keys %tolerance_type) {
-		next unless $tolerance_type{$type}->{parse};
-		if (my $tolerance = $tolerance_type{$type}->{parse}->($string)) {
+		next unless $type->can('parse');
+		if (my $tolerance = $type->parse($string)) {
 			return $tolerance;
 		}
 	}
 	return;
 }
 
-sub _stringify { $tolerance_type{$_[0]->{method}}->{stringify}->($_[0]) }
-
-sub _num_eq  { not(_num_gt($_[0],$_[1])) and not(_num_lt($_[0],$_[1])) }
-
-sub _num_gt  {
-	$_[2]
-		? (defined $_[0]->{max} ? $_[1] >  $_[0]->{max} : undef)
-		: (defined $_[0]->{min} ? $_[1] <  $_[0]->{min} : undef)
+sub stringify {
+	my ($self) = @_;
+	return 'any number' unless $self->{min} || $self->{max};
+	my $string = '';
+	if ($self->{min}) {
+		$string .= "$self->{min} <" . ($self->{exclude_min} ? '' : '=') . ' ';
+	}
+	$string .= 'x';
+	if ($self->{max}) {
+		$string .= ' <' . ($self->{exclude_max} ? '' : '=') .  " $self->{max}";
+	}
+	return $string;
 }
 
-sub _num_lt  {
-	$_[2]
-		? (defined $_[0]->{min} ? $_[1] <  $_[0]->{min} : undef)
-		: (defined $_[0]->{max} ? $_[1] >  $_[0]->{max} : undef)
+=head2 C<< stringify_as($type) >>
+
+This method does nothing!  Someday, it will stringify the given tolerance as a
+different type, if possible.  "10 +/- 1" will
+C<stringify_as('plus_or_minus_pct')> to "10 +/- 10%" for example.
+
+=cut
+
+sub stringify_as { }
+
+sub _num_eq  { not( _num_gt($_[0],$_[1]) or _num_lt($_[0],$_[1]) ) }
+
+sub _num_ne { not _num_eq(@_) }
+
+sub _num_gt  { $_[2] ? goto &_num_lt_canonical : goto &_num_gt_canonical }
+
+sub _num_lt  { $_[2] ? goto &_num_gt_canonical : goto &_num_lt_canonical }
+
+sub _num_gte { $_[1] == $_[0] ? 1 : goto &_num_gt; }
+
+sub _num_lte { $_[1] == $_[0] ? 1 : goto &_num_lt; }
+
+sub _num_gt_canonical {
+	return 1 if $_[0]{exclude_min} and $_[0]{min} == $_[1];
+	defined $_[0]->{min} ? $_[1] <  $_[0]->{min} : undef
 }
 
-sub _num_gte {
-	return 1 if $_[1] == $_[0];
-	$_[2]
-		? (defined $_[0]->{max} ? $_[1] > $_[0]->{max} : undef)
-		: (defined $_[0]->{min} ? $_[1] < $_[0]->{min} : undef)
-}
-
-sub _num_lte {
-	return 1 if $_[1] == $_[0];
-	$_[2]
-		? (defined $_[0]->{min} ? $_[1] < $_[0]->{min} : undef)
-		: (defined $_[0]->{max} ? $_[1] > $_[0]->{max} : undef)
+sub _num_lt_canonical {
+	return 1 if $_[0]{exclude_max} and $_[0]{max} == $_[1];
+	defined $_[0]->{max} ? $_[1] >  $_[0]->{max} : undef
 }
 
 sub _union {
@@ -288,23 +196,37 @@ sub _intersection {
 	return $_[0] == $_[1] ? $_[1] : () unless ref $_[1];
 
 	my ($min, $max);
+	my ($exclude_min, $exclude_max);
 
 	if (defined $_[0]->{min} and defined $_[1]->{min}) {
 		($min) = sort {$b<=>$a}  ($_[0]->{min}, $_[1]->{min});
 	} else {
 		$min = $_[0]->{min} || $_[1]->{min};
 	}
+	$exclude_min = 1
+		if ($_[0]{min} and $min == $_[0]{min} and $_[0]{exclude_min})
+		or ($_[1]{min} and $min == $_[1]{min} and $_[1]{exclude_min});
 
 	if (defined $_[0]->{max} and defined $_[1]->{max}) {
 		($max) = sort {$a<=>$b} ($_[0]->{max}, $_[1]->{max});
 	} else {
 		$max = $_[0]->{max} || $_[1]->{max};
 	}
+	$exclude_max = 1
+		if ($_[0]{max} and $max == $_[0]{max} and $_[0]{exclude_max})
+		or ($_[1]{max} and $max == $_[1]{max} and $_[1]{exclude_max});
 
 	return tolerance('infinite') unless defined $min || defined $max;
-	return tolerance($min => 'or_more') unless defined $max;
-	return tolerance($max => 'or_less') unless defined $min;
-	return tolerance($min => to => $max);
+	return tolerance($min => ($exclude_min ? 'more_than' : 'or_more'))
+		unless defined $max;
+	return tolerance($max => ($exclude_max ? 'less_than' : 'or_less'))
+		unless defined $min;
+	bless {
+		max => $max,
+		min => $min,
+		exclude_max => $exclude_max,
+		exclude_min => $exclude_min
+	} => 'Number::Tolerant::Type::to';
 }
 
 =head2 Overloading
@@ -317,19 +239,21 @@ Tolerances overload a few operations, mostly comparisons.
 
 Tolerances are always true.
 
-=item numification
+=item numify
 
-Tolerances with finite ranges numify to their center values.  Tolerances with
-infinite ranges numify to their fixed end.
+Most tolerances numify to undef.
 
-=item stringification
+=item stringify
 
-A tolerance stringifies to a short description of itself.
+A tolerance stringifies to a short description of itself, generally something
+like "m < x < n"
 
- infinite - "any number"
- to       - "x to y"
- or_more  - "x or more"
- or_less  - "x or less"
+ infinite  - "any number"
+ to        - "m <= x <= n"
+ or_more   - "m <= x"
+ or_less   - "x <= n"
+ more_than - "m < x"
+ less_than - "x < n"
  plus_or_minus     - "x +/- y"
  plus_or_minus_pct - "x +/- y%"
 
@@ -375,15 +299,17 @@ L<Number::Tolerant::Union> for more information.
 use overload
 	fallback => 1,
 	'bool'   => sub { 1 },
-	'0+' => sub { $_[0]->{value} },
-	'""' => \&_stringify,
-	'==' => \&_num_eq,
-	'>'  => \&_num_gt,
-	'<'  => \&_num_lt,
-	'>=' => \&_num_gte,
-	'<=' => \&_num_lte,
-	'|'  => \&_union,
-	'&'  => \&_intersection;
+	'0+'  => sub { ($_[0]{min} and $_[0]{max} and $_[0]{min} == $_[0]{max}) ? $_[0]{min} : undef },
+	'<=>' => sub { $_[2] ? ($_[1] <=> $_[0]->{value}) : ($_[0]->{value} <=> $_[1]) },
+	'""' => 'stringify',
+	'==' => '_num_eq',
+	'!=' => '_num_ne',
+	'>'  => '_num_gt',
+	'<'  => '_num_lt',
+	'>=' => '_num_gte',
+	'<=' => '_num_lte',
+	'|'  => '_union',
+	'&'  => '_intersection';
 
 =back
 
@@ -391,16 +317,24 @@ use overload
 
 This feature is slighly experimental, but it's here.  Custom tolerance types
 can be created by adding entries to the hash returned by the C<_tolerance_type>
-method.  Each entry is a hash of coderefs used to implement the tolerance.
-The keys are as follows: 
+method.  Keys are package names, and values are ignored.  (This registration
+interface is all but sure to be rewritten in the near future.)
+
+The packages should contain classes that subclass Number::Tolerant, providing
+at least these methods:
 
  construct  - returns the reference to be blessed into the tolerance object
  parse      - used by from_string; returns the object that represents the string
               or undef, if the string doesn't represent this kind of tolerance
- stringify  - provides the string representation of the object (which is passed)
  valid_args - passed args from ->new() or tolerance(); if they indicate this 
               type of tolerance, this sub returns args to be passed to
               construct
+
+The Number::Tolerant constructor looks through the list of packages for one
+whose C<valid_args> likes the arguments passed to the constructor.  That
+package's C<construct> is used to build the guts of the object.  (This is a
+simplification; some other logic is applied, including passing literal numbers
+through unblessed by default.)
 
 =head1 TODO
 

@@ -1,3 +1,5 @@
+1.011 2005-07-19 14:55
+	* fix misuse of "union"
 1.010 2005-07-06 22:36
 	* better documentation for infinite tolerances
 	* infinite & infinite yields infinite

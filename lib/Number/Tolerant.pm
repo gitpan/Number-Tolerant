@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.10 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.11 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -140,7 +140,7 @@ sub num_lte {
 		: (defined $_[0]->{max} ? $_[1] >= $_[0]->{max} : undef)
 }
 
-sub union {
+sub intersection {
 	return $_[0] == $_[1] ? $_[1] : () unless ref $_[1];
 
 	my ($min, $max);
@@ -202,10 +202,10 @@ tolerance.
 "...or equal to" comparisons include the min/max values in the permissible
 range, as common sense suggests.
 
-=item tolerance unions
+=item tolerance intersection
 
 A tolerance C<&> a tolerance or number is the intersection of the two ranges.
-Unions allow you to quickly narrow down a set of tolerances to the most
+Intersections allow you to quickly narrow down a set of tolerances to the most
 stringent intersection of values.
 
  tolerance(5 => to => 6) & tolerance(5.5 => to => 6.5);
@@ -213,8 +213,8 @@ stringent intersection of values.
 
 If the given values have no intersection, C<()> is returned.
 
-A union with a normal number will yield that number, if it is within the
-tolerance.
+An intersection with a normal number will yield that number, if it is within
+the tolerance.
 
 =cut
 
@@ -227,13 +227,13 @@ use overload
 	'<'  => \&num_lt,
 	'>=' => \&num_gte,
 	'<=' => \&num_lte,
-	'&'  => \&union;
+	'&'  => \&intersection;
 
 =back
 
 =head1 TODO
 
-Overload | (bitwise or) to create multiple range options.
+Overload | (bitwise or) to create multiple range options (unions).
 
 Allow translation into forms not originally used:
 

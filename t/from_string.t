@@ -7,43 +7,43 @@ BEGIN { use_ok("Number::Tolerant"); }
 
 { # plusminus
 	my $tol = Number::Tolerant->from_string("10 +/- 2");
-	is($tol, "10 +/- 2");
+	is($tol, "10 +/- 2", "plus_or_minus");
 }
 
 { # plusminus_pct
 	my $tol = Number::Tolerant->from_string("10 +/- 10%");
-	is($tol, "10 +/- 10%");
+	is($tol, "10 +/- 10%", "plus_or_minus_pct");
 }
 
 { # or_less
 	my $tol = Number::Tolerant->from_string("10 or less");
-	is($tol, "10 or less");
+	is($tol, "10 or less", "or_less");
 }
 
 { # or_more
 	my $tol = Number::Tolerant->from_string("10 or more");
-	is($tol, "10 or more");
+	is($tol, "10 or more", "or_more");
 }
 
 { # x_to_y
 	my $tol = Number::Tolerant->from_string("8 to 12");
-	is($tol, "8 to 12");
+	is($tol, "8 to 12", "to");
 }
 
 
 { # infinite
 	my $tol = Number::Tolerant->from_string("any number");
-	is($tol, "any number");
+	is($tol, "any number", "infinite");
 }
 
 { # constant
-	is( Number::Tolerant->from_string("10.12"), "10.12" );
-	is( Number::Tolerant->from_string("1012"),  "1012" );
+	is( Number::Tolerant->from_string("10.12"), "10.12", "constant: 10.12");
+	is( Number::Tolerant->from_string("1012"),  "1012",  "constant:  1012");
 }
 
 { # bad string
 	my $tol = Number::Tolerant->from_string("is this thing on?");
-	is($tol, undef);
+	is($tol, undef, "invalid string: undef");
 }
 
 { # instance method call should die

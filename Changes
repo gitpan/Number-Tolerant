@@ -1,6 +1,9 @@
 Revision history for Number::Tolerant
 
-1.40    2004-12-0x xx:xx
+1.42    2004-12-08
+        bump requirements to perl 5.8 (5.6 has an overload bug, it seems)
+
+1.40    2004-12-07
         added end-point exclusion
         rewrote exensibilty as subclassing, like a sane person would
         eliminated most numifications

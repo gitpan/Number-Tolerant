@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = "1.40";
+our $VERSION = "1.42";
 
 use strict;
 use warnings;
@@ -15,9 +15,9 @@ Number::Tolerant -- tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.40
+version 1.42
 
- $Id: Tolerant.pm,v 1.29 2004/12/07 20:46:29 rjbs Exp $
+ $Id: Tolerant.pm,v 1.30 2004/12/08 19:19:20 rjbs Exp $
 
 =head1 SYNOPSIS
 
@@ -376,6 +376,11 @@ Is equivalent to the C<Number::Tolerant> code:
 ...while the following code expresses an actual range:
 
  $range = tolerance(10 => to => 15) | tolerance(20 => to => 25);
+
+=head1 THANKS
+
+Thanks to Yuval Kogman and #perl-qa for helping find the bizarre bug that drove
+the minimum required perl up to 5.8
 
 =head1 AUTHOR
 

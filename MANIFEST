@@ -9,6 +9,7 @@ lib/Number/Tolerant/Union.pm
 t/and_constant.t
 t/and_tolerance.t
 t/bad_method.t
+t/from_string.t
 t/infinite.t
 t/or_less.t
 t/or_more.t

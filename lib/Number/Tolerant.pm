@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = "1.20";
+our $VERSION = "1.22";
 
 use strict;
 use warnings;
@@ -15,7 +15,9 @@ Number::Tolerant -- tolerance ranges for inexact numbers
 
 =head1 VERSION
 
- $Id$
+version 1.22
+
+ $Id: Tolerant.pm,v 1.17 2004/08/19 19:36:46 rjbs Exp $
 
 =head1 SYNOPSIS
 

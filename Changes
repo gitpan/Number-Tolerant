@@ -1,3 +1,5 @@
+1.20 	2004-08-19 15:35
+	* from_string method added
 1.016	2004-07-22 10:35
 	* statement coverage at 100%
 	* branch coverage at 100%

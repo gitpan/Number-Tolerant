@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = "1.29_01";
+our $VERSION = "1.30";
 
 use strict;
 use warnings;
@@ -15,9 +15,9 @@ Number::Tolerant -- tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.29_01
+version 1.30
 
- $Id: Tolerant.pm,v 1.19 2004/08/20 18:03:24 rjbs Exp $
+ $Id: Tolerant.pm,v 1.20 2004/08/20 19:23:29 rjbs Exp $
 
 =head1 SYNOPSIS
 
@@ -74,6 +74,7 @@ neither C<$x> nor C<$y> is used; "infinite" should be the sole argument.
 =cut
 
 my $number = qr/(?:[+-]?)(?=\d|\.\d)\d*(?:\.\d*)?(?:[Ee](?:[+-]?\d+))?/;
+sub _number_re { $number }
 
 my %tolerance_type = (
 	constant          => {
@@ -86,7 +87,14 @@ my %tolerance_type = (
 		}
 	},
 	plus_or_minus     => {
-		construct => sub { { value => $_[0], variance => $_[1], min => $_[0] - $_[1], max => $_[0] + $_[1] } },
+		construct => sub {
+			{
+				value => $_[0],
+				variance => $_[1],
+				min => $_[0] - $_[1],
+				max => $_[0] + $_[1]
+			}
+		},
 		parse     => sub {
 			tolerance("$1", 'plus_or_minus', "$2")
 				if ($_[0] =~ m!\A($number) \+/- ($number)\Z!)
@@ -95,7 +103,9 @@ my %tolerance_type = (
 		valid_args=> sub {
 			return ($_[0],$_[2])
 				if ((grep { defined } @_) == 3)
-				and ($_[0] =~ $number) and ($_[1] eq 'plus_or_minus') and ($_[2] =~ $number);
+				and ($_[0] =~ $number)
+				and ($_[1] eq 'plus_or_minus')
+				and ($_[2] =~ $number);
 			return;
 		}
 	},
@@ -109,13 +119,16 @@ my %tolerance_type = (
 			}
 		},
 		parse     => sub {
-			tolerance("$1", 'plus_or_minus_pct', "$2") if ($_[0] =~ m!\A($number) \+/- ($number)%\Z!) 
+			tolerance("$1", 'plus_or_minus_pct', "$2")
+				if ($_[0] =~ m!\A($number) \+/- ($number)%\Z!) 
 		},
 		stringify => sub { "$_[0]->{value} +/- $_[0]->{variance}%" },
 		valid_args=> sub {
 			return ($_[0],$_[2])
 				if ((grep { defined } @_) == 3)
-				and ($_[0] =~ $number) and ($_[1] eq 'plus_or_minus_pct') and ($_[2] =~ $number);
+				and ($_[0] =~ $number)
+				and ($_[1] eq 'plus_or_minus_pct')
+				and ($_[2] =~ $number);
 			return;
 		}
 	},
@@ -170,9 +183,13 @@ my %tolerance_type = (
 		construct => sub { { value => 0 } },
 		parse     => sub { tolerance('infinite') if ($_[0] =~ m!\Aany number\Z!) },
 		stringify => sub { "any number" },
-		valid_args=> sub { return ($_[0]) if @_==1 and defined $_[0] and $_[0] eq 'infinite'; return; }
+		valid_args=> sub {
+			return ($_[0]) if @_==1 and defined $_[0] and $_[0] eq 'infinite'; return;
+		}
 	},
 );
+
+sub _tolerance_type { \%tolerance_type }
 
 sub tolerance { __PACKAGE__->new(@_); }
 
@@ -359,6 +376,21 @@ use overload
 	'&'  => \&_intersection;
 
 =back
+
+=head2 EXTENDING
+
+This feature is slighly experimental, but it's here.  Custom tolerance types
+can be created by adding entries to the hash returned by the C<_tolerance_type>
+method.  Each entry is a hash of coderefs used to implement the tolerance.
+The keys are as follows: 
+
+ construct  - returns the reference to be blessed into the tolerance object
+ parse      - used by from_string; returns the object that represents the string
+              or undef, if the string doesn't represent this kind of tolerance
+ stringify  - provides the string representation of the object (which is passed)
+ valid_args - passed args from ->new() or tolerance(); if they indicate this 
+              type of tolerance, this sub returns args to be passed to
+              construct
 
 =head1 TODO
 

@@ -1,5 +1,5 @@
 package Number::Tolerant::Union;
-our $VERSION = "1.29_01";
+our $VERSION = "1.30";
 
 use strict;
 use warnings;
@@ -10,9 +10,9 @@ Number::Tolerant::Union -- unions of tolerance ranges
 
 =head1 VERSION
 
-version 1.29_01
+version 1.30
 
- $Id: Union.pm,v 1.8 2004/08/20 18:03:24 rjbs Exp $
+ $Id: Union.pm,v 1.9 2004/08/20 19:23:29 rjbs Exp $
 
 =head1 SYNOPSIS
 

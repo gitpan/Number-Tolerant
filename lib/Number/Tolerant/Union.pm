@@ -1,5 +1,5 @@
 package Number::Tolerant::Union;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.4 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.5 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -33,7 +33,7 @@ tolerance will function on a union of tolerances, as listed below.
 
 =head1 METHODS
 
-=head2 Instantiation
+=head2 C<< Number::Tolerant::Union->new( @options ) >>
 
 There is a C<new> method on the Number::Tolerant::Union class, but unions are
 meant to be created with the C<|> operator on a Number::Tolerant tolerance.
@@ -50,6 +50,12 @@ sub new {
 	my $class = shift;
 	bless { options => [ @_ ] } => $class;
 }
+
+=head2 options
+
+This method will return a list of all the acceptable options for the union.
+
+=cut
 
 sub options {
 	my $self = shift;

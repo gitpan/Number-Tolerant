@@ -1,4 +1,4 @@
-use Test::More 'no_plan';
+use Test::More tests => 39;
 
 use strict;
 use warnings;
@@ -69,4 +69,18 @@ BEGIN { use_ok("Number::Tolerant::Union"); }
 	ok(11 != $limited, ' ... 11 != $limited');
 	ok(15 != $limited, ' ... 15 != $limited');
 	ok(16 != $limited, ' ... 16 != $limited');
+}
+
+{
+	my $alpha = Number::Tolerant->new(5 => to => 10);
+	my $beta  = Number::Tolerant->new(7 => to => 15);
+
+	isa_ok($alpha, 'Number::Tolerant');
+	isa_ok($beta,  'Number::Tolerant');
+
+	my $choice = $alpha | $beta;
+
+	my $limited = $choice & 100;
+
+	is($limited, undef, " ... choice and this union is undef");
 }

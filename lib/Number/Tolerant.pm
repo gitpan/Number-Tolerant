@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.15 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.16 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -37,6 +37,10 @@ specified tolerances.
 
 =head2 Instantiation
 
+=head3 C<< Number::Tolerance->new( ... ) >>
+
+=head3 C<< tolerance( ... ) >>
+
 There is a C<new> method on the Number::Tolerant class, but it also exports a
 simple function, C<tolerance>, which will return an object of the
 Number::Tolerant class.  Both use the same syntax:
@@ -57,7 +61,7 @@ at present:
   infinite          | -Inf to Inf
 
 For C<or_less> and C<or_more>, C<$y> is ignored if passed.  For C<infinite>,
-C<$x> and C<$y> are both ignored, if passed.
+neither C<$x> nor C<$y> is used; "infinite" should be the sole argument.
 
 =cut
 
@@ -65,7 +69,7 @@ sub _args_valid {
 	my ($method, $x, $y) = @_;
 	return 1 if $method eq 'infinite';
 	return unless defined $x;
-	$method =~ /^(plus|to)/ and return unless defined $y;
+	return if $method =~ /^(plus|to)/ and not defined $y;
 	return 1;
 }
 
@@ -82,8 +86,9 @@ sub _arg_handler {
 	return $methods{$method};
 }
 
-sub values {
+sub _values {
 	shift; my ($method, $x, $y) = @_;
+	return unless $method;
 	return unless _args_valid($method, $x, $y);
 	return unless my $handler = _arg_handler($method);
 	my %return;
@@ -96,13 +101,14 @@ sub tolerance { __PACKAGE__->new(@_); }
 
 sub new {
 	my $class = shift;
-	unshift @_, undef if $_[0] eq 'infinite';
-	return unless my @self = $class->values(@_[1,0,2]) ;
+	return unless @_;
+	unshift @_, undef if $_[0] and $_[0] eq 'infinite';
+	return unless my @self = $class->_values(@_[1,0,2]) ;
 	return $self[0] if @self == 1;
 	bless { @self } => $class;
 }
 
-sub stringify {
+sub _stringify {
 	my %strings = (
 		plus_or_minus     => sub { "$_[0]->{value} +/- $_[0]->{variance}"  },
 		plus_or_minus_pct => sub { "$_[0]->{value} +/- $_[0]->{variance}%" },
@@ -114,38 +120,40 @@ sub stringify {
 	$strings{$_[0]->{method}}->($_[0]);
 }
 
-sub num_eq  { not(num_gt($_[0],$_[1])) and not(num_lt($_[0],$_[1])) }
+sub _num_eq  { not(_num_gt($_[0],$_[1])) and not(_num_lt($_[0],$_[1])) }
 
-sub num_gt  {
+sub _num_gt  {
 	$_[2]
 		? (defined $_[0]->{max} ? $_[1] >  $_[0]->{max} : undef)
 		: (defined $_[0]->{min} ? $_[1] <  $_[0]->{min} : undef)
 }
 
-sub num_lt  {
+sub _num_lt  {
 	$_[2]
 		? (defined $_[0]->{min} ? $_[1] <  $_[0]->{min} : undef)
 		: (defined $_[0]->{max} ? $_[1] >  $_[0]->{max} : undef)
 }
 
-sub num_gte {
+sub _num_gte {
+	return 1 if $_[1] == $_[0];
 	$_[2]
-		? (defined $_[0]->{max} ? $_[1] >= $_[0]->{max} : undef)
-		: (defined $_[0]->{min} ? $_[1] <= $_[0]->{min} : undef)
+		? (defined $_[0]->{max} ? $_[1] > $_[0]->{max} : undef)
+		: (defined $_[0]->{min} ? $_[1] < $_[0]->{min} : undef)
 }
 
-sub num_lte {
+sub _num_lte {
+	return 1 if $_[1] == $_[0];
 	$_[2]
-		? (defined $_[0]->{min} ? $_[1] <= $_[0]->{min} : undef)
-		: (defined $_[0]->{max} ? $_[1] >= $_[0]->{max} : undef)
+		? (defined $_[0]->{min} ? $_[1] < $_[0]->{min} : undef)
+		: (defined $_[0]->{max} ? $_[1] > $_[0]->{max} : undef)
 }
 
-sub union {
+sub _union {
 	require Number::Tolerant::Union;
 	return Number::Tolerant::Union->new($_[0],$_[1]);
 }
 
-sub intersection {
+sub _intersection {
 	return $_[0] == $_[1] ? $_[1] : () unless ref $_[1];
 
 	my ($min, $max);
@@ -232,14 +240,14 @@ L<Number::Tolerant::Union> for more information.
 use overload
 	fallback => 1,
 	'0+' => sub { $_[0]->{value} },
-	'""' => \&stringify,
-	'==' => \&num_eq,
-	'>'  => \&num_gt,
-	'<'  => \&num_lt,
-	'>=' => \&num_gte,
-	'<=' => \&num_lte,
-	'|'  => \&union,
-	'&'  => \&intersection;
+	'""' => \&_stringify,
+	'==' => \&_num_eq,
+	'>'  => \&_num_gt,
+	'<'  => \&_num_lt,
+	'>=' => \&_num_gte,
+	'<=' => \&_num_lte,
+	'|'  => \&_union,
+	'&'  => \&_intersection;
 
 =back
 

@@ -1,4 +1,4 @@
-use Test::More tests => 5;
+use Test::More tests => 8;
 
 use strict;
 use warnings;
@@ -27,4 +27,22 @@ is(
 	Number::Tolerant->new(5 => 'plus_or_minus_pct'),
 	undef,
 	"'plus_or_minus_pct' requires two values"
+);
+
+is(
+	Number::Tolerant->new(),
+	undef,
+	"at least one param required"
+);
+
+is(
+	Number::Tolerant->new(5),
+	undef,
+	"single param only OK for infinite"
+);
+
+is(
+	Number::Tolerant->new(undef , 'to' , undef),
+	undef,
+	"undef-undef range not valid (should it be?)"
 );

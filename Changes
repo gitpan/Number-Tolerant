@@ -1,3 +1,9 @@
+1.016	2004-07-22 10:35
+	* statement coverage at 100%
+	* branch coverage at 100%
+	* condition coverage at 100%
+	* sub coverage at 100%
+	* pod coverage at 100%
 1.015	2004-07-21 13:35
 	* more tests!
 	* (x | y) & z now works

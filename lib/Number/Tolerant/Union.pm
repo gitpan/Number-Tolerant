@@ -1,5 +1,5 @@
 package Number::Tolerant::Union;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.1 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.4 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -83,7 +83,14 @@ A number is less than a union if it is less than all its options.
 
 =item union intersection
 
-There is no C<&> operator overloading for unions... yet.
+An intersection (C<&>) with a union is commutted across all options.  In other
+words:
+
+ (a | b | c) & d  ==yields==> ((a & d) | (b & d) | (c & d))
+
+Options that have no intersection with the new element are dropped.  The
+intersection of a constant number and a union yields that number, if the number
+was in the union's ranges and otherwise yields nothing.
 
 =cut
 
@@ -102,14 +109,26 @@ use overload
 			if ($_[2]) { for ($_[0]->options) { return 0 unless $_[1] < $_ } return 1 }
 			else       { for ($_[0]->options) { return 0 unless $_[1] > $_ } return 1 }
 		},
-	'<=>' => sub { undef },
+	'<=>' =>
+		sub {
+			if ($_[2]) { $_[0] < $_[1] ? 1 : $_[0] > $_[1] ? -1 : 0 }
+			else       { $_[0] > $_[1] ? 1 : $_[0] < $_[1] ? -1 : 0 }
+		},
+	'|' => sub { __PACKAGE__->new($_[0]->options,$_[1]); },
+	'&' => sub {
+		UNIVERSAL::isa($_[1],'Number::Tolerant')
+			? __PACKAGE__->new(map { $_ & $_[1] } $_[0]->options )
+			: $_[1] == $_[0]
+				? $_[1]
+				: ();
+		},
 	fallback => 1;
 
 =back
 
 =head1 TODO
 
-Who knows.  Intersection commution, probably.
+Who knows.  Collapsing overlapping options, probably.
 
 =head1 AUTHOR
 

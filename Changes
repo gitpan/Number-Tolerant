@@ -1,16 +1,23 @@
-1.012 2005-07-20 15:35
+1.014	2004-07-21 13:35
+	* more tests!
+	* (x | y) & z now works
+1.013	2004-07-21 12:40
+	* more tests!
+	* Number::Range cross-ref
+	* fix typos in changelog (it's not 2005 yet!)
+1.012 2004-07-20 15:35
 	* add Union.pm
 	* enable |-overloaded union of ranges
-1.011 2005-07-19 14:55
+1.011 2004-07-19 14:55
 	* fix misuse of "union"
-1.010 2005-07-06 22:36
+1.010 2004-07-06 22:36
 	* better documentation for infinite tolerances
 	* infinite & infinite yields infinite
 	* more tests!
 	* POD formatting error
-1.009 2005-07-06 16:21
+1.009 2004-07-06 16:21
 	* POD formatting error
-1.008 2005-07-06 16:18
+1.008 2004-07-06 16:18
   * add 'infinite' method (still sketchy)
 	* add & operator overloading
 	* add tests for the above

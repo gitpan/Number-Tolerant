@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.12 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.14 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -76,7 +76,7 @@ sub _arg_handler {
 		plus_or_minus_pct => sub { $_[0], $_[1], $_[0] - $_[0]*($_[1]/100), $_[0] + $_[0]*($_[1]/100) },
 		or_more           => sub { $_[0], undef, $_[0], undef },
 		or_less           => sub { $_[0], undef, undef, $_[0] },
-		to                => sub { ($_[0],$_[1]) = sort ($_[0],$_[1]); ($_[0]+$_[1])/2, $_[1] - ($_[0]+$_[1])/2, $_[0], $_[1] },
+		to                => sub { ($_[0],$_[1]) = sort { $a <=> $b } ($_[0],$_[1]); ($_[0]+$_[1])/2, $_[1] - ($_[0]+$_[1])/2, $_[0], $_[1] },
 		infinite          => sub { 0, undef, undef, undef },
 	);
 	return $methods{$method};
@@ -249,6 +249,25 @@ Allow translation into forms not originally used:
 
  $range = tolerance(9 => to => 17); 
  $range->convert_to('plus_minus');
+
+=head1 SEE ALSO
+
+The module L<Number::Range> provides another way to deal with ranges of
+numbers.  The major differences are: N::R is set-like, not range-like; N::R
+does not overload any operators.  Number::Tolerant will not (like N::R) attempt
+to parse a textual range specification like "1..2,5,7..10"
+
+The C<Number::Range> code:
+
+ $range = Number::Range->new("10..15","20..25");
+
+Is equivalent to the C<Number::Tolerant> code:
+
+ $range = Number::Tolerant::Union->new(10..15,20..25);
+
+...while the following code expresses an actual range:
+
+ $range = tolerance(10 => to => 15) | tolerance(20 => to => 25);
 
 =head1 AUTHOR
 

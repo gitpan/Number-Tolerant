@@ -13,6 +13,8 @@ isa_ok($beta,  'Number::Tolerant');
 
 my $choice = $alpha | $beta;
 
+	use Data::Dumper; print Dumper($choice);
+
 isa_ok($choice,   'Number::Tolerant::Union', 'union');
 
 is_deeply(
@@ -74,9 +76,9 @@ ok(not( 5.5 > $choice),    " ... 5.5 isn't more than it");
 ok(not( 5.6 > $choice),    " ... 5.6 isn't more than it");
 ok(     6.5 > $choice,     " ... 6.5 is more than it");
 
-is( (4 <=> $choice), undef,   " ... 4 <=> union is undef");
-is( (5 <=> $choice), undef,   " ... 5 <=> union is undef");
-is( (6 <=> $choice), undef,   " ... 6 <=> union is undef");
+is( (4 <=> $choice), -1,   " ... 4 <=> union is -1");
+is( (5 <=> $choice),  0,   " ... 5 <=> union is 0");
+is( (6 <=> $choice),  0,   " ... 6 <=> union is 0");
 
 # ... and now more of the same, BACKWARDS
 
@@ -130,6 +132,6 @@ ok(not( $choice > 5.5),    " ... it isn't more than 5.5");
 ok(not( $choice > 5.6),    " ... it isn't more than 5.6");
 ok(not( $choice > 6.5),    " ... it isn't more than 6.5");
 
-is( ($choice <=> 4), undef,   " ... 4 <=> it is undef");
-is( ($choice <=> 5), undef,   " ... 5 <=> it is undef");
-is( ($choice <=> 6), undef,   " ... 6 <=> it is undef");
+is( ($choice <=> 4), 1,    " ... 4 <=> it is 1");
+is( ($choice <=> 5), 0,    " ... 5 <=> it is 0");
+is( ($choice <=> 6), 0,    " ... 6 <=> it is 0");

@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.14 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.15 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -249,6 +249,7 @@ Allow translation into forms not originally used:
 
  $range = tolerance(9 => to => 17); 
  $range->convert_to('plus_minus');
+ $range->stringify_as('plus_minus_pct');
 
 =head1 SEE ALSO
 

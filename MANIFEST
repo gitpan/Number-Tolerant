@@ -19,6 +19,7 @@ t/plusminus_pct_0.t
 t/pod.t
 t/union.t
 t/union_more.t
+t/union_and.t
 t/x_to_x.t
 t/x_to_y.t
 t/y_to_x.t

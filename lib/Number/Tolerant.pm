@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = "1.30";
+our $VERSION = "1.32";
 
 use strict;
 use warnings;
@@ -15,9 +15,9 @@ Number::Tolerant -- tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.30
+version 1.32
 
- $Id: Tolerant.pm,v 1.20 2004/08/20 19:23:29 rjbs Exp $
+ $Id: Tolerant.pm,v 1.22 2004/08/23 13:28:15 rjbs Exp $
 
 =head1 SYNOPSIS
 
@@ -396,18 +396,30 @@ The keys are as follows:
 
 Extend C<from_string> to cover unions.
 
+Extend C<from_string> to include Number::Range-type specifications.
+
 Allow translation into forms not originally used:
 
  $range = tolerance(9 => to => 17); 
  $range->convert_to('plus_minus');
  $range->stringify_as('plus_minus_pct');
 
+C<stringify_as> can be faked, for a few tolerance types, with something like
+this:
+
+ Number::Tolerance->_tolerance_type->{'destination_type'}->stringify($range);
+
+Besides being ugly, it's a side-effect that isn't tested or guaranteed to work
+very often.
+
 =head1 SEE ALSO
 
 The module L<Number::Range> provides another way to deal with ranges of
 numbers.  The major differences are: N::R is set-like, not range-like; N::R
 does not overload any operators.  Number::Tolerant will not (like N::R) attempt
-to parse a textual range specification like "1..2,5,7..10"
+to parse a textual range specification like "1..2,5,7..10" unless specifically
+instructed to.  (The valid formats for strings passed to C<from_string> does
+not match Number::Range exactly.  See TODO.)
 
 The C<Number::Range> code:
 

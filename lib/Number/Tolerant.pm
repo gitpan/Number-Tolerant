@@ -1,5 +1,5 @@
 package Number::Tolerant;
-our $VERSION = sprintf "%d.%03d", q$Revision: 1.6 $ =~ /(\d+)/g;
+our $VERSION = sprintf "%d.%03d", q$Revision: 1.7 $ =~ /(\d+)/g;
 
 use strict;
 use warnings;
@@ -59,20 +59,32 @@ For C<or_less> and C<or_more>, C<$y> is ignored if passed.
 
 =cut
 
-sub values {
-	shift; my ($method, $x, $y) = @_;
+sub _args_valid {
+	my ($method, $x, $y) = @_;
 	return unless defined $x;
 	$method =~ /^(plus|to)/ and return unless defined $y;
+	return 1;
+}
+
+sub _arg_handler { 
+	my $method = shift;
 	my %methods = (
-		plus_or_minus     => sub { $method, $x, $y, $x - $y, $x + $y },
-		plus_or_minus_pct => sub { $method, $x, $y, $x - $x*($y/100), $x + $x*($y/100) },
-		or_more           => sub { $method, $x, undef, $x, undef },
-		or_less           => sub { $method, $x, undef, undef, $x },
-		to                => sub { ($x,$y) = sort ($x,$y); $method, ($x+$y)/2, $y - ($x+$y)/2, $x, $y }
+		plus_or_minus     => sub { $_[0], $_[1], $_[0] - $_[1], $_[0] + $_[1] },
+		plus_or_minus_pct => sub { $_[0], $_[1], $_[0] - $_[0]*($_[1]/100), $_[0] + $_[0]*($_[1]/100) },
+		or_more           => sub { $_[0], undef, $_[0], undef },
+		or_less           => sub { $_[0], undef, undef, $_[0] },
+		to                => sub { ($_[0],$_[1]) = sort ($_[0],$_[1]); ($_[0]+$_[1])/2, $_[1] - ($_[0]+$_[1])/2, $_[0], $_[1] }
 	);
-	return unless $methods{$method};
+	return $methods{$method};
+}
+
+sub values {
+	shift; my ($method, $x, $y) = @_;
+	return unless _args_valid($method, $x, $y);
+	return unless my $handler = _arg_handler($method);
 	my %return;
-	@return{qw(method value tolerance min max)} = $methods{$method}->();
+	@return{qw(method value tolerance min max)} = ($method, $handler->($x,$y));
+	return $return{value} if defined $return{tolerance} and not $return{tolerance};
 	%return;
 }
 
@@ -80,8 +92,9 @@ sub tolerance { __PACKAGE__->new(@_); }
 
 sub new {
 	my $class = shift;
-	return unless my %self = $class->values(@_[1,0,2]) ;
-	bless \%self => $class;
+	return unless my @self = $class->values(@_[1,0,2]) ;
+	return $self[0] if @self == 1;
+	bless { @self } => $class;
 }
 
 sub stringify {

@@ -9,9 +9,9 @@ my $guess = Number::Tolerant->new(5 => plus_or_minus => 0);
 
 ok($guess, "created our object");
 
-isa_ok($guess, "Number::Tolerant", " ... ");
+is(ref $guess, '',        " ... is not a reference");
 
-is("$guess", "5 +/- 0",   " ... stringifies properly");
+is("$guess", "5",         " ... stringifies properly");
 is(0+$guess, 5,           " ... numifies properly");
 
 ok(0.0 != $guess,         " ... 0.0 isn't equal to it");

@@ -13,7 +13,7 @@ Number::Tolerant::Constant -- a blessed constant type
 
 version 1.40
 
- $Id: Constant.pm,v 1.3 2004/12/07 20:46:29 rjbs Exp $
+ $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Constant.pm 18115 2006-01-27T01:51:05.875783Z rjbs  $
 
 =head1 SYNOPSIS
 
@@ -37,20 +37,25 @@ would otherwise complain that the constructor hadn't returned a blessed object.
 my $number = Number::Tolerant->_number_re;
 
 package Number::Tolerant::Type::constant;
+use base qw(Number::Tolerant);
 no warnings 'redefine';
 
 sub construct { shift;
 	{ value => $_[0], min => $_[0], max => $_[0], constant => 1 }
 };
 
-sub parse { shift; $_[0] if ($_[0] =~ m!\A($number)\Z!) }
+sub parse { shift;
+  Number::Tolerant::tolerance$_[0] if ($_[0] =~ m!\A($number)\z!)
+}
 
 sub stringify { $_[0]->{value} }
 
 sub valid_args { shift;
-	return $_[0] if @_==1 and $_[0] =~ $number;
-	return
+	return $_[0] if @_==1 and $_[0] =~ m!\A($number)\z!;
+	return;
 }
+
+Number::Tolerant->_tolerance_type->{'Number::Tolerant::Type::constant'} = 1;
 
 =head1 TODO
 

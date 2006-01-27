@@ -12,7 +12,7 @@ Number::Tolerant::Union -- unions of tolerance ranges
 
 version 1.42
 
- $Id: Union.pm,v 1.10 2004/12/08 19:19:20 rjbs Exp $
+ $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Union.pm 18105 2006-01-27T00:20:33.632478Z rjbs  $
 
 =head1 SYNOPSIS
 

@@ -1,8 +1,9 @@
 package Number::Tolerant::BasicTypes;
-our $VERSION = "1.40";
 
 use strict;
 use warnings;
+
+our $VERSION = "1.44";
 
 use Carp;
 use Number::Tolerant;
@@ -13,9 +14,9 @@ Number::Tolerant::BasicTypes -- basic built-in tolerance types
 
 =head1 VERSION
 
-version 1.40
+version 1.44
 
- $Id: BasicTypes.pm,v 1.4 2004/12/07 20:30:31 rjbs Exp $
+ $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/BasicTypes.pm 18115 2006-01-27T01:51:05.875783Z rjbs  $
 
 =head1 SYNOPSIS
 
@@ -43,10 +44,12 @@ use base qw(Number::Tolerant);
 
 sub construct { shift; $_[0] }
 
-sub parse { shift; $_[0] if ($_[0] =~ m!\A($number)\Z!) }
+sub parse { shift;
+  return $_[0] if ($_[0] =~ m!\A($number)\z!);
+}
 
 sub valid_args { shift;
-	return $_[0] if @_==1 and defined $_[0] and $_[0] =~ $number;
+	return $_[0] if @_==1 and defined $_[0] and $_[0] =~ m!\A($number)\z!;
 	return
 }
 
@@ -66,7 +69,7 @@ sub construct { shift;
 
 sub parse { shift;
 	Number::Tolerant::tolerance("$1", 'plus_or_minus', "$2")
-		if ($_[0] =~ m!\A($number) \+/- ($number)\Z!)
+		if ($_[0] =~ m!\A($number) \+/- ($number)\z!)
 }
 
 sub stringify { "$_[0]->{value} +/- $_[0]->{variance}"  }
@@ -96,7 +99,7 @@ sub construct { shift;
 
 sub parse { shift;
 	Number::Tolerant::tolerance("$1", 'plus_or_minus_pct', "$2")
-		if ($_[0] =~ m!\A($number) \+/- ($number)%\Z!) 
+		if ($_[0] =~ m!\A($number) \+/- ($number)%\z!) 
 }
 
 sub stringify { "$_[0]->{value} +/- $_[0]->{variance}%" }
@@ -119,11 +122,11 @@ sub construct { shift; { value => $_[0], min => $_[0] } }
 
 sub parse { shift; 
 	return Number::Tolerant::tolerance("$1", 'or_more')
-		if ($_[0] =~ m!\A($number)\s*<=$X\Z!);
+		if ($_[0] =~ m!\A($number)\s*<=$X\z!);
 	return Number::Tolerant::tolerance("$1", 'or_more')
-		if ($_[0] =~ m!\A$X?>=\s*($number)\Z!);
+		if ($_[0] =~ m!\A$X?>=\s*($number)\z!);
 	return Number::Tolerant::tolerance("$1", 'or_more')
-		if ($_[0] =~ m!\A($number) or more\Z!);
+		if ($_[0] =~ m!\A($number) or more\z!);
 }
 
 sub valid_args { shift;
@@ -142,11 +145,11 @@ sub construct { shift; { value => $_[0], min => $_[0], exclude_min => 1 } }
 
 sub parse { shift;
 	return Number::Tolerant::tolerance(more_than => "$1")
-		if ($_[0] =~ m!\A($number)\s*<$X\Z!);
+		if ($_[0] =~ m!\A($number)\s*<$X\z!);
 	return Number::Tolerant::tolerance(more_than => "$1")
-		if ($_[0] =~ m!\A$X?>\s*($number)\Z!);
+		if ($_[0] =~ m!\A$X?>\s*($number)\z!);
 	return Number::Tolerant::tolerance(more_than => "$1")
-		if ($_[0] =~ m!\Amore than ($number)\Z!);
+		if ($_[0] =~ m!\Amore than ($number)\z!);
 }
 
 sub valid_args { shift;
@@ -166,11 +169,11 @@ sub construct { shift; { value => $_[0], max => $_[0] } }
 
 sub parse { shift;
 	return Number::Tolerant::tolerance("$1", 'or_less')
-		if ($_[0] =~ m!\A$X?<=\s*($number)\Z!);
+		if ($_[0] =~ m!\A$X?<=\s*($number)\z!);
 	return Number::Tolerant::tolerance("$1", 'or_less')
-		if ($_[0] =~ m!\A($number)\s*>=$X\Z!);
+		if ($_[0] =~ m!\A($number)\s*>=$X\z!);
 	return Number::Tolerant::tolerance("$1", 'or_less')
-		if ($_[0] =~ m!\A($number) or less\Z!);
+		if ($_[0] =~ m!\A($number) or less\z!);
 }
 
 sub valid_args { shift;
@@ -189,11 +192,11 @@ sub construct { shift; { value => $_[0], max => $_[0], exclude_max => 1 } }
 
 sub parse { shift;
 	return Number::Tolerant::tolerance(less_than => "$1")
-		if ($_[0] =~ m!\A$X?<\s*($number)\Z!);
+		if ($_[0] =~ m!\A$X?<\s*($number)\z!);
 	return Number::Tolerant::tolerance(less_than => "$1")
-		if ($_[0] =~ m!\A($number)>$X\Z!);
+		if ($_[0] =~ m!\A($number)\s*>$X\z!);
 	return Number::Tolerant::tolerance(less_than => "$1")
-		if ($_[0] =~ m!\Aless than ($number)\Z!);
+		if ($_[0] =~ m!\Aless than ($number)\z!);
 }
 
 sub valid_args { shift;
@@ -221,11 +224,11 @@ sub construct { shift;
 
 sub parse { shift;
 	return Number::Tolerant::tolerance("$1", 'to', "$2")
-		if ($_[0] =~ m!\A($number)\s*<=$X<=\s*($number)\Z!);
+		if ($_[0] =~ m!\A($number)\s*<=$X<=\s*($number)\z!);
 	return Number::Tolerant::tolerance("$2", 'to', "$1")
-		if ($_[0] =~ m!\A($number)\s*>=$X>=\s*($number)\Z!);
+		if ($_[0] =~ m!\A($number)\s*>=$X>=\s*($number)\z!);
 	return Number::Tolerant::tolerance("$1", 'to', "$2")
-		if ($_[0] =~ m!\A($number) to ($number)\Z!)
+		if ($_[0] =~ m!\A($number) to ($number)\z!)
 }
 
 sub valid_args { shift;
@@ -244,7 +247,7 @@ sub construct { shift; { value => 0 } }
 
 sub parse { shift;
 	Number::Tolerant::tolerance('infinite')
-		if ($_[0] =~ m!\Aany number\Z!)
+		if ($_[0] =~ m!\Aany number\z!)
 }
 
 sub valid_args { shift;
@@ -253,6 +256,46 @@ sub valid_args { shift;
 }
 
 Number::Tolerant->_tolerance_type->{'Number::Tolerant::Type::infinite'}= 1;
+
+package Number::Tolerant::Type::offset;
+use base qw(Number::Tolerant);
+
+sub construct { shift;
+  {
+    value => $_[0],
+    min   => $_[0] + $_[1],
+    max   => $_[0] + $_[2]
+  }
+}
+
+sub parse {
+  my (undef, $string) = @_;
+
+  if ($string =~ m!\A($number)\s+\(?\s*($number)\s+($number)\s*\)?\s*\z!) {
+    Number::Tolerant::tolerance("$1", 'offset', "$2", "$3")
+  }
+}
+
+sub stringify {
+  my ($self) = @_;
+  return sprintf "%s (-%s +%s)",
+    $_[0]->{value},
+    ($_[0]->{value} - $_[0]->{min}),
+    ($_[0]->{max} - $_[0]->{value});
+}
+
+sub valid_args { shift;
+  return ($_[0],$_[2], $_[3])
+    if  (grep { defined } @_) == 4
+    and $_[0] =~ $number
+    and $_[1] eq 'offset'
+    and $_[2] =~ $number
+    and $_[3] =~ $number;
+
+  return;
+}
+
+Number::Tolerant->_tolerance_type->{'Number::Tolerant::Type::offset'} = 1;
 
 =head1 TODO
 

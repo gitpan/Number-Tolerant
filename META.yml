@@ -10,5 +10,5 @@ no_index:
     - t
 requires: 
   perl: 5.8.0
-tests: " t/00.load.t t/and_constant.t t/and_tolerance.t t/bad_method.t t/constant.t t/from_string.t t/infinite.t t/less_than.t t/more_than.t t/new_types.t t/offset.t t/or_less.t t/or_more.t t/plusminus.t t/plusminus_0.t t/plusminus_pct.t t/plusminus_pct_0.t t/pod-coverage.t t/pod.t t/stringify_as.t t/union.t t/union_and.t t/union_more.t t/x_to_x.t t/x_to_y.t t/y_to_x.t"
-version: 1.44
+tests: " t/00-load.t t/and_constant.t t/and_tolerance.t t/bad_method.t t/bad_plugin.t t/constant.t t/from_string.t t/infinite.t t/less_than.t t/more_than.t t/new_types.t t/offset.t t/or_less.t t/or_more.t t/plusminus.t t/plusminus_0.t t/plusminus_pct.t t/plusminus_pct_0.t t/pod-coverage.t t/pod.t t/stringify_as.t t/union.t t/union_and.t t/union_more.t t/x_to_x.t t/x_to_y.t t/y_to_x.t"
+version: 1.50

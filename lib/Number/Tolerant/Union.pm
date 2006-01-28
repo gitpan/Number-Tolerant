@@ -6,13 +6,13 @@ use warnings;
 
 =head1 NAME
 
-Number::Tolerant::Union -- unions of tolerance ranges
+Number::Tolerant::Union - unions of tolerance ranges
 
 =head1 VERSION
 
 version 1.42
 
- $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Union.pm 18105 2006-01-27T00:20:33.632478Z rjbs  $
+ $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Union.pm 18205 2006-01-28T00:48:56.763611Z rjbs  $
 
 =head1 SYNOPSIS
 

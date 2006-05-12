@@ -4,7 +4,7 @@ use base qw(Number::Tolerant);
 use strict;
 use warnings;
 
-our $VERSION = "1.50";
+our $VERSION = "1.52";
 
 =head1 NAME
 
@@ -12,9 +12,9 @@ Number::Tolerant::Type - a type of tolerance
 
 =head1 VERSION
 
-version 1.50
+version 1.52
 
- $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Type.pm 18205 2006-01-28T00:48:56.763611Z rjbs  $
+ $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Type.pm 22014 2006-05-11T23:00:09.416140Z rjbs  $
 
 =head1 SYNOPSIS
 
@@ -28,7 +28,7 @@ our $X      = qr/(?:\s*x\s*)/;
 
 =head1 METHODS
 
-=head2 C< valid_args >
+=head2 valid_args
 
   my @args = $type_class->valid_args(@_);
 
@@ -36,14 +36,14 @@ If the arguments to C<valid_args> are valid arguments for this type of
 tolerance, this method returns their canonical form, suitable for passing to
 C<L</construct>>.  Otherwise this method returns false.
 
-=head2 C< construct >
+=head2 construct
 
   my $object_guts = $type_class->construct(@args);
 
 This method is passed the output of the C<L</valid_args>> method, and should
 return a hashref that will become the guts of a new tolerance.
 
-=head2 C< parse >
+=head2 parse
 
   my $tolerance = $type_class->parse($string);
 

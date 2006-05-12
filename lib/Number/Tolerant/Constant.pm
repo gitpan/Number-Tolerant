@@ -1,5 +1,5 @@
 package Number::Tolerant::Constant;
-our $VERSION = "1.50";
+our $VERSION = "1.52";
 
 use strict;
 use warnings;
@@ -12,7 +12,7 @@ Number::Tolerant::Constant - a blessed constant type
 
 version 1.50
 
- $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Constant.pm 18205 2006-01-28T00:48:56.763611Z rjbs  $
+ $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Constant.pm 22014 2006-05-11T23:00:09.416140Z rjbs  $
 
 =head1 SYNOPSIS
 
@@ -53,9 +53,17 @@ sub valid_args { shift;
   return;
 }
 
-#Number::Tolerant->_tolerance_type->{'Number::Tolerant::Type::constant'} = 1;
-Number::Tolerant->disable_plugin("Number::Tolerant::Type::constant");
-Number::Tolerant->enable_plugin( "Number::Tolerant::Type::constant_obj");
+package Number::Tolerant::Constant;
+
+sub import {
+  Number::Tolerant->disable_plugin("Number::Tolerant::Type::constant");
+  Number::Tolerant->enable_plugin( "Number::Tolerant::Type::constant_obj");
+}
+
+sub _disable {
+  Number::Tolerant->disable_plugin("Number::Tolerant::Type::constant_obj");
+  Number::Tolerant->enable_plugin( "Number::Tolerant::Type::constant");
+}
 
 =head1 TODO
 

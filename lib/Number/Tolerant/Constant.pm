@@ -1,5 +1,5 @@
 package Number::Tolerant::Constant;
-our $VERSION = "1.52";
+our $VERSION = "1.540";
 
 use strict;
 use warnings;
@@ -10,9 +10,9 @@ Number::Tolerant::Constant - a blessed constant type
 
 =head1 VERSION
 
-version 1.50
+version 1.540
 
- $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Constant.pm 22014 2006-05-11T23:00:09.416140Z rjbs  $
+ $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Constant.pm 22321 2006-05-19T02:29:23.338118Z rjbs  $
 
 =head1 SYNOPSIS
 
@@ -43,7 +43,8 @@ sub construct { shift;
 };
 
 sub parse { shift;
-  Number::Tolerant::tolerance$_[0] if ($_[0] =~ m!\A($number)\z!)
+  return Number::Tolerant::tolerance$_[0] if ($_[0] =~ m!\A($number)\z!);
+  return;
 }
 
 sub stringify { $_[0]->{value} }

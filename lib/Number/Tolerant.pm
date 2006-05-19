@@ -4,7 +4,7 @@ use base qw(Exporter);
 use strict;
 use warnings;
 
-our $VERSION = "1.52";
+our $VERSION = "1.540";
 our @EXPORT = qw(tolerance);
 
 use Carp;
@@ -15,9 +15,9 @@ Number::Tolerant - tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.52
+version 1.540
 
- $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant.pm 22014 2006-05-11T23:00:09.416140Z rjbs  $
+ $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant.pm 22321 2006-05-19T02:29:23.338118Z rjbs  $
 
 =head1 SYNOPSIS
 
@@ -63,8 +63,8 @@ at present:
 
   method              range
  -------------------+------------------
-  plus_or_minus     | x ± y
-  plus_or_minus_pct | x ± (y% of x)
+  plus_or_minus     | x +/- y
+  plus_or_minus_pct | x +/- (y% of x)
   or_more           | x to Inf
   or_less           | x to -Inf
   more_than         | x to Inf, not x
@@ -182,7 +182,7 @@ sub from_string {
   my ($class, $string) = @_;
   croak "from_string is a class method" if ref $class;
   for my $type (keys %_plugins) {
-    if (my $tolerance = $type->parse($string)) {
+    if (defined(my $tolerance = $type->parse($string))) {
       return $tolerance;
     }
   }
@@ -473,4 +473,4 @@ terms as Perl itself.
 
 =cut
 
-"1 ± 0";
+"1 +/- 0";

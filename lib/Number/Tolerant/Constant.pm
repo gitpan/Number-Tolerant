@@ -1,5 +1,5 @@
 package Number::Tolerant::Constant;
-our $VERSION = "1.540";
+our $VERSION = "1.550";
 
 use strict;
 use warnings;
@@ -10,7 +10,7 @@ Number::Tolerant::Constant - a blessed constant type
 
 =head1 VERSION
 
-version 1.540
+version 1.550
 
  $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Constant.pm 22321 2006-05-19T02:29:23.338118Z rjbs  $
 
@@ -36,20 +36,22 @@ would otherwise complain that the constructor hadn't returned a blessed object.
 package Number::Tolerant::Type::constant_obj;
 use base qw(Number::Tolerant::Type);
 
-my $number = $Number::Tolerant::Type::number;
-
 sub construct { shift;
   { value => $_[0], min => $_[0], max => $_[0], constant => 1 }
 };
 
-sub parse { shift;
+sub parse {
+  my $self = shift;
+  my $number = $self->number_re;
   return Number::Tolerant::tolerance$_[0] if ($_[0] =~ m!\A($number)\z!);
   return;
 }
 
 sub stringify { $_[0]->{value} }
 
-sub valid_args { shift;
+sub valid_args {
+  my $self = shift;
+  my $number = $self->number_re;
   return $_[0] if @_==1 and $_[0] =~ m!\A($number)\z!;
   return;
 }

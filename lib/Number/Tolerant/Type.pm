@@ -1,10 +1,10 @@
-package Number::Tolerant::Type;
-use base qw(Number::Tolerant);
-
 use strict;
 use warnings;
 
-our $VERSION = "1.550";
+package Number::Tolerant::Type;
+use base qw(Number::Tolerant);
+
+our $VERSION = "1.600";
 
 =head1 NAME
 
@@ -12,9 +12,7 @@ Number::Tolerant::Type - a type of tolerance
 
 =head1 VERSION
 
-version 1.550
-
- $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Type.pm 22321 2006-05-19T02:29:23.338118Z rjbs  $
+version 1.600
 
 =head1 SYNOPSIS
 

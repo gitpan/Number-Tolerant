@@ -1,8 +1,8 @@
-package Number::Tolerant::Constant;
-our $VERSION = "1.550";
-
 use strict;
 use warnings;
+
+package Number::Tolerant::Constant;
+our $VERSION = "1.600";
 
 =head1 NAME
 
@@ -10,9 +10,7 @@ Number::Tolerant::Constant - a blessed constant type
 
 =head1 VERSION
 
-version 1.550
-
- $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Constant.pm 22321 2006-05-19T02:29:23.338118Z rjbs  $
+version 1.600
 
 =head1 SYNOPSIS
 
@@ -41,9 +39,9 @@ sub construct { shift;
 };
 
 sub parse {
-  my $self = shift;
+  my ($self, $string, $factory) = @_;
   my $number = $self->number_re;
-  return Number::Tolerant::tolerance$_[0] if ($_[0] =~ m!\A($number)\z!);
+  return $factory->new($string) if ($string =~ m!\A($number)\z!);
   return;
 }
 

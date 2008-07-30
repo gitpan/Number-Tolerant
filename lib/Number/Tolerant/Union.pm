@@ -1,8 +1,8 @@
-package Number::Tolerant::Union;
-our $VERSION = "1.42";
-
 use strict;
 use warnings;
+
+package Number::Tolerant::Union;
+our $VERSION = "1.600";
 
 =head1 NAME
 
@@ -10,9 +10,7 @@ Number::Tolerant::Union - unions of tolerance ranges
 
 =head1 VERSION
 
-version 1.42
-
- $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant/Union.pm 22014 2006-05-11T23:00:09.416140Z rjbs  $
+version 1.600
 
 =head1 SYNOPSIS
 
@@ -130,7 +128,7 @@ use overload
 		},
 	'|' => sub { __PACKAGE__->new($_[0]->options,$_[1]); },
 	'&' => sub {
-		UNIVERSAL::isa($_[1],'Number::Tolerant')
+		eval { $_[1]->isa('Number::Tolerant') }
 			? __PACKAGE__->new(map { $_ & $_[1] } $_[0]->options )
 			: $_[1] == $_[0]
 				? $_[1]

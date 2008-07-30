@@ -1,16 +1,9 @@
-use Test::More tests => 72;
+use Test::More tests => 71;
 
 use strict;
 use warnings;
 
 BEGIN { use_ok("Number::Tolerant"); }
-
-{ # test parse
-  for (">= 5", "x >= 5", "5 <= x") {
-    my $tol = Number::Tolerant::Type::or_more->parse($_);
-    isa_ok($tol, 'Number::Tolerant', $_);
-  }
-}
 
 my $guess = Number::Tolerant->new(5 => 'or_more');
 
@@ -104,6 +97,11 @@ is($guess->numify, undef, " ... numifies to undef");
   }
   { # algebraic
 	  my $tol = Number::Tolerant->from_string(">= 10");
+    isa_ok($tol, 'Number::Tolerant');
+    is($tol, "10 <= x", "or_more");
+  }
+  { # from own notation
+	  my $tol = Number::Tolerant->from_string("10 <= x");
     isa_ok($tol, 'Number::Tolerant');
     is($tol, "10 <= x", "or_more");
   }

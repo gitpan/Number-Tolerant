@@ -1,24 +1,24 @@
-package Number::Tolerant::Type::more_than;
-use base qw(Number::Tolerant::Type);
-
 use strict;
 use warnings;
 
-our $VERSION = '1.550';
+package Number::Tolerant::Type::more_than;
+use base qw(Number::Tolerant::Type);
+
+our $VERSION = '1.600';
 
 sub construct { shift; { value => $_[0], min => $_[0], exclude_min => 1 } }
 
 sub parse {
-  my $self = shift;
+  my ($self, $string, $factory) = @_;
+
   my $number = $self->number_re;
   my $X = $self->variable_re;
 
-  return Number::Tolerant::tolerance(more_than => "$1")
-    if ($_[0] =~ m!\A($number)\s*<$X\z!);
-  return Number::Tolerant::tolerance(more_than => "$1")
-    if ($_[0] =~ m!\A$X?>\s*($number)\z!);
-  return Number::Tolerant::tolerance(more_than => "$1")
-    if ($_[0] =~ m!\Amore\s+than\s+($number)\z!);
+  return $factory->new(more_than => "$1") if $string =~ m!\A($number)\s*<$X\z!;
+  return $factory->new(more_than => "$1") if $string =~ m!\A$X?>\s*($number)\z!;
+
+  return $factory->new(more_than => "$1")
+    if $string =~ m!\Amore\s+than\s+($number)\z!;
   return;
 }
 

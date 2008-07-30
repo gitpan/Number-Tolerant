@@ -1,13 +1,18 @@
-package Number::Tolerant;
-use base qw(Exporter);
-
 use strict;
 use warnings;
 
-our $VERSION = "1.550";
-our @EXPORT = qw(tolerance);
+package Number::Tolerant;
+use base qw(Exporter);
 
-use Carp;
+our $VERSION = "1.600";
+
+use Sub::Exporter::Util;
+use Sub::Exporter -setup => {
+  exports => { tolerance => Sub::Exporter::Util::curry_class('new'), },
+  groups  => { default   => [ qw(tolerance) ] },
+};
+
+use Carp ();
 
 =head1 NAME
 
@@ -15,9 +20,7 @@ Number::Tolerant - tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.550
-
- $Id: /my/cs/projects/tolerant/trunk/lib/Number/Tolerant.pm 22321 2006-05-19T02:29:23.338118Z rjbs  $
+version 1.600
 
 =head1 SYNOPSIS
 
@@ -93,10 +96,17 @@ tolerances:
 
 The first will sort as numerically less than the second.
 
+If the given arguments can't be formed into a tolerance, an exception will be
+raised.
+
 =cut
 
 # these are the default plugins
 my %_plugins;
+
+sub _plugins {
+  keys %_plugins
+}
 
 sub disable_plugin {
   my ($class, $plugin) = @_;
@@ -128,21 +138,23 @@ sub validate_plugin {
   return 1;
 }
 
-__PACKAGE__->enable_plugin("Number::Tolerant::Type::$_") for 
-  qw( constant    infinite        less_than
-      more_than   offset          or_less 
-      or_more     plus_or_minus   plus_or_minus_pct
-      to
-    );
+my @_default_plugins = 
+  map { "Number::Tolerant::Type::$_" }
+  qw(
+    constant    infinite        less_than
+    more_than   offset          or_less 
+    or_more     plus_or_minus   plus_or_minus_pct
+    to
+  );
 
-sub tolerance { __PACKAGE__->new(@_); }
+__PACKAGE__->enable_plugin($_) for @_default_plugins;
 
 sub new {
   my $class = shift;
   return unless @_;
   my $self;
 
-  for my $type (keys %_plugins) {
+  for my $type ($class->_plugins) {
     next unless my @args = $type->valid_args(@_);
     my $guts = $type->construct(@args);
 
@@ -160,7 +172,7 @@ sub new {
     last;
   }
 
-  return unless $self;
+  Carp::confess("couldn't form tolerance from given args") unless $self;
   bless $self => $self->{method};
 }
 
@@ -176,17 +188,20 @@ tolerance.  For example:
 This will I<not> yet parse stringified unions, but that will be implemented in
 the future.  (I just don't need it yet.)
 
+If a string can't be parsed, an exception is raised.
+
 =cut
 
 sub from_string {
   my ($class, $string) = @_;
-  croak "from_string is a class method" if ref $class;
+  Carp::croak "from_string is a class method" if ref $class;
   for my $type (keys %_plugins) {
-    if (defined(my $tolerance = $type->parse($string))) {
+    if (defined(my $tolerance = $type->parse($string, $class))) {
       return $tolerance;
     }
   }
-  return;
+
+  Carp::confess("couldn't form tolerance from given string");
 }
 
 sub stringify {
@@ -194,11 +209,11 @@ sub stringify {
   return 'any number' unless $self->{min} || $self->{max};
   my $string = '';
   if ($self->{min}) {
-    $string .= "$self->{min} <" . ($self->{exclude_min} ? '' : '=') . ' ';
+    $string .= "$self->{min} <" . ($self->{exclude_min} ? q{} : '=') . q{ };
   }
   $string .= 'x';
   if ($self->{max}) {
-    $string .= ' <' . ($self->{exclude_max} ? '' : '=') .  " $self->{max}";
+    $string .= ' <' . ($self->{exclude_max} ? q{} : '=') .  " $self->{max}";
   }
   return $string;
 }
@@ -229,6 +244,7 @@ sub numify {
   # if a tolerance has equal min and max, it numifies to that number
   return $_[0]{min}
     if $_[0]{min} and $_[0]{max} and $_[0]{min} == $_[0]{max};
+  ## no critic (ReturnUndef)
   return undef;
 }
 
@@ -260,7 +276,10 @@ sub _union {
 }
 
 sub _intersection {
-  return $_[0] == $_[1] ? $_[1] : () unless ref $_[1];
+  if (! ref $_[1]) {
+    return $_[1] if $_[0] == $_[1];
+    Carp::confess "no valid intersection of ($_[0]) and ($_[1])";
+  }
 
   my ($min, $max);
   my ($exclude_min, $exclude_max);
@@ -283,10 +302,10 @@ sub _intersection {
     if ($_[0]{max} and $max == $_[0]{max} and $_[0]{exclude_max})
     or ($_[1]{max} and $max == $_[1]{max} and $_[1]{exclude_max});
 
-  return tolerance('infinite') unless defined $min || defined $max;
-  return tolerance($min => ($exclude_min ? 'more_than' : 'or_more'))
+  return $_[0]->new('infinite') unless defined $min || defined $max;
+  return $_[0]->new($min => ($exclude_min ? 'more_than' : 'or_more'))
     unless defined $max;
-  return tolerance($max => ($exclude_max ? 'less_than' : 'or_less'))
+  return $_[0]->new($max => ($exclude_max ? 'less_than' : 'or_less'))
     unless defined $min;
   bless {
     max => $max,
@@ -430,6 +449,12 @@ defined in Number::Tolerant::Type.  If it does not, an exception is thrown.
  $range->stringify_as('plus_minus_pct');
 
 =item * Create a factory so that you can simultaneously work with two sets of plugins.
+
+This one is very near completion.  There will now be two classes that should be
+used:  Number::Tolerant::Factory, which produces tolerances, and
+Number::Tolerant::Tolerance, which is a tolerance.  Both will inherit from
+N::T, for supporting old code, and N::T will dispatch construction methods to a
+default factory.
 
 =back
 

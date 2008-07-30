@@ -1,10 +1,10 @@
-package Number::Tolerant::Type::to;
-use base qw(Number::Tolerant::Type);
-
 use strict;
 use warnings;
 
-our $VERSION = '1.550';
+package Number::Tolerant::Type::to;
+use base qw(Number::Tolerant::Type);
+
+our $VERSION = '1.600';
 
 sub construct { shift;
   ($_[0],$_[1]) = sort { $a <=> $b } ($_[0],$_[1]);
@@ -17,16 +17,16 @@ sub construct { shift;
 }
 
 sub parse {
-  my $self = shift;
+  my ($self, $string, $factory) = @_;
   my $number = $self->number_re;
   my $X = $self->variable_re;
 
-  return Number::Tolerant::tolerance("$1", 'to', "$2")
-    if ($_[0] =~ m!\A($number)\s*<=$X<=\s*($number)\z!);
-  return Number::Tolerant::tolerance("$2", 'to', "$1")
-    if ($_[0] =~ m!\A($number)\s*>=$X>=\s*($number)\z!);
-  return Number::Tolerant::tolerance("$1", 'to', "$2")
-    if ($_[0] =~ m!\A($number)\s+to\s+($number)\z!);
+  return $factory->new("$1", 'to', "$2")
+    if ($string =~ m!\A($number)\s*<=$X<=\s*($number)\z!);
+  return $factory->new("$2", 'to', "$1")
+    if ($string =~ m!\A($number)\s*>=$X>=\s*($number)\z!);
+  return $factory->new("$1", 'to', "$2")
+    if ($string =~ m!\A($number)\s+to\s+($number)\z!);
   return;
 }
 

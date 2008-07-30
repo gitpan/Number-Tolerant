@@ -1,16 +1,16 @@
-package Number::Tolerant::Type::infinite;
-use base qw(Number::Tolerant::Type);
-
 use strict;
 use warnings;
 
-our $VERSION = '1.550';
+package Number::Tolerant::Type::infinite;
+use base qw(Number::Tolerant::Type);
+
+our $VERSION = '1.600';
 
 sub construct { shift; { value => 0 } }
 
-sub parse { shift;
-  return Number::Tolerant::tolerance('infinite')
-    if ($_[0] =~ m!\Aany\s+number\z!);
+sub parse {
+  my ($self, $string, $factory) = @_;
+  return $factory->new('infinite') if $string =~ m!\Aany\s+number\z!;
   return;
 }
 

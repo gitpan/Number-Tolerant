@@ -1,12 +1,18 @@
-author: Ricardo SIGNES <rjbs@cpan.org>
+---
+author:
+  - 'Ricardo SIGNES <rjbs@cpan.org>'
 distribution_type: module
-generated_by: Module::Install version 0.62
+generated_by: 'Module::Install version 0.71'
 license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.3.html
+  version: 1.3
 name: Number-Tolerant
-no_index: 
-  directory: 
+no_index:
+  directory:
     - inc
     - t
-requires: 
+requires:
+  Sub::Exporter: 0.95
   perl: 5.8.0
-version: 1.550
+version: 1.600

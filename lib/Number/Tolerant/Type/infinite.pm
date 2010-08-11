@@ -4,7 +4,7 @@ use warnings;
 package Number::Tolerant::Type::infinite;
 use base qw(Number::Tolerant::Type);
 
-our $VERSION = '1.601';
+our $VERSION = '1.700';
 
 sub construct { shift; { value => 0 } }
 
@@ -15,7 +15,7 @@ sub parse {
 }
 
 sub valid_args { shift;
-  return ($_[0]) if @_==1 and defined $_[0] and $_[0] eq 'infinite';
+  return ($_[0]) if @_ == 1 and defined $_[0] and $_[0] eq 'infinite';
   return;
 }
 

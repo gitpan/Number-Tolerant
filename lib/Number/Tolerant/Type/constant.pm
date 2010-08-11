@@ -4,21 +4,24 @@ use warnings;
 package Number::Tolerant::Type::constant;
 use base qw(Number::Tolerant::Type);
 
-our $VERSION = '1.601';
+our $VERSION = '1.700';
 
 sub construct { shift; $_[0] }
 
 sub parse {
   my $self = shift;
-  my $number = $self->number_re;
-  return $_[0] if ($_[0] =~ m!\A($number)\z!);
-  return;
+  return $self->normalize_number($_[0]);
 }
 
 sub valid_args {
   my $self = shift;
-  my $number = $self->number_re;
-  return $_[0] if @_==1 and defined $_[0] and $_[0] =~ m!\A($number)\z!;
+
+  my $number = $self->normalize_number($_[0]);
+
+  return unless defined $number;
+
+  return $number if @_ == 1;
+
   return;
 }
 

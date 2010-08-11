@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 package Number::Tolerant::Constant;
-our $VERSION = "1.601";
+our $VERSION = "1.700";
 
 =head1 NAME
 
@@ -10,7 +10,7 @@ Number::Tolerant::Constant - a blessed constant type
 
 =head1 VERSION
 
-version 1.601
+version 1.700
 
 =head1 SYNOPSIS
 
@@ -45,12 +45,18 @@ sub parse {
   return;
 }
 
-sub stringify { $_[0]->{value} }
+sub numify { $_[0]->{value} }
+
+sub stringify { "$_[0]->{value}" }
 
 sub valid_args {
   my $self = shift;
-  my $number = $self->number_re;
-  return $_[0] if @_==1 and $_[0] =~ m!\A($number)\z!;
+  my $number = $self->normalize_number($_[0]);
+
+  return unless defined $number;
+
+  return $number if @_ == 1;
+
   return;
 }
 

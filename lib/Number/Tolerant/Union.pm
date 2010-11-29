@@ -1,8 +1,59 @@
 use strict;
 use warnings;
-
 package Number::Tolerant::Union;
-our $VERSION = "1.700";
+BEGIN {
+  $Number::Tolerant::Union::VERSION = '1.701';
+}
+# ABSTRACT: unions of tolerance ranges
+
+
+sub new {
+	my $class = shift;
+	bless { options => [ @_ ] } => $class;
+}
+
+
+sub options {
+	my $self = shift;
+	return @{$self->{options}};
+}
+
+
+use overload
+	'0+' => sub { undef },
+	'""' => sub { join(' or ', map { "($_)" } $_[0]->options) },
+	'==' => sub { for ($_[0]->options) { return 1 if $_ == $_[1] } return 0 },
+	'!=' => sub { for ($_[0]->options) { return 0 if $_ == $_[1] } return 1 },
+	'>'  =>
+		sub {
+			if ($_[2]) { for ($_[0]->options) { return 0 unless $_[1] > $_ } return 1 }
+			else       { for ($_[0]->options) { return 0 unless $_[1] < $_ } return 1 }
+		},
+	'<'  =>
+		sub {
+			if ($_[2]) { for ($_[0]->options) { return 0 unless $_[1] < $_ } return 1 }
+			else       { for ($_[0]->options) { return 0 unless $_[1] > $_ } return 1 }
+		},
+	'<=>' =>
+		sub {
+			if ($_[2]) { $_[0] < $_[1] ? 1 : $_[0] > $_[1] ? -1 : 0 }
+			else       { $_[0] > $_[1] ? 1 : $_[0] < $_[1] ? -1 : 0 }
+		},
+	'|' => sub { __PACKAGE__->new($_[0]->options,$_[1]); },
+	'&' => sub {
+		eval { $_[1]->isa('Number::Tolerant') }
+			? __PACKAGE__->new(map { $_ & $_[1] } $_[0]->options )
+			: $_[1] == $_[0]
+				? $_[1]
+				: ();
+		},
+	fallback => 1;
+
+
+1;
+
+__END__
+=pod
 
 =head1 NAME
 
@@ -10,7 +61,7 @@ Number::Tolerant::Union - unions of tolerance ranges
 
 =head1 VERSION
 
-version 1.700
+version 1.701
 
 =head1 SYNOPSIS
 
@@ -50,23 +101,9 @@ Intersecting ranges are not converted into a single range, but this may change
 in the future.  (For example, the union of "5 to 10" and "7 to 12" is not "5 to
 12.")
 
-=cut
-
-sub new {
-	my $class = shift;
-	bless { options => [ @_ ] } => $class;
-}
-
 =head2 options
 
 This method will return a list of all the acceptable options for the union.
-
-=cut
-
-sub options {
-	my $self = shift;
-	return @{$self->{options}};
-}
 
 =head2 Overloading
 
@@ -104,38 +141,6 @@ Options that have no intersection with the new element are dropped.  The
 intersection of a constant number and a union yields that number, if the number
 was in the union's ranges and otherwise yields nothing.
 
-=cut
-
-use overload
-	'0+' => sub { undef },
-	'""' => sub { join(' or ', map { "($_)" } $_[0]->options) },
-	'==' => sub { for ($_[0]->options) { return 1 if $_ == $_[1] } return 0 },
-	'!=' => sub { for ($_[0]->options) { return 0 if $_ == $_[1] } return 1 },
-	'>'  =>
-		sub {
-			if ($_[2]) { for ($_[0]->options) { return 0 unless $_[1] > $_ } return 1 }
-			else       { for ($_[0]->options) { return 0 unless $_[1] < $_ } return 1 }
-		},
-	'<'  =>
-		sub {
-			if ($_[2]) { for ($_[0]->options) { return 0 unless $_[1] < $_ } return 1 }
-			else       { for ($_[0]->options) { return 0 unless $_[1] > $_ } return 1 }
-		},
-	'<=>' =>
-		sub {
-			if ($_[2]) { $_[0] < $_[1] ? 1 : $_[0] > $_[1] ? -1 : 0 }
-			else       { $_[0] > $_[1] ? 1 : $_[0] < $_[1] ? -1 : 0 }
-		},
-	'|' => sub { __PACKAGE__->new($_[0]->options,$_[1]); },
-	'&' => sub {
-		eval { $_[1]->isa('Number::Tolerant') }
-			? __PACKAGE__->new(map { $_ & $_[1] } $_[0]->options )
-			: $_[1] == $_[0]
-				? $_[1]
-				: ();
-		},
-	fallback => 1;
-
 =back
 
 =head1 TODO
@@ -144,13 +149,14 @@ Who knows.  Collapsing overlapping options, probably.
 
 =head1 AUTHOR
 
-Ricardo SIGNES, E<lt>rjbs@cpan.orgE<gt>
+Ricardo Signes <rjbs@cpan.org>
 
-=head1 COPYRIGHT
+=head1 COPYRIGHT AND LICENSE
 
-(C) 2004, Ricardo SIGNES.  Number::Tolerant::Union is available under the same
-terms as Perl itself.
+This software is copyright (c) 2004 by Ricardo Signes.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-1;

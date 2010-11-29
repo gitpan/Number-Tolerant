@@ -1,13 +1,13 @@
 use strict;
 use warnings;
-
 package Number::Tolerant;
-use base qw(Exporter);
-
-our $VERSION = "1.700";
+BEGIN {
+  $Number::Tolerant::VERSION = '1.701';
+}
+# ABSTRACT: tolerance ranges for inexact numbers
 
 use Sub::Exporter::Util;
-use Sub::Exporter -setup => {
+use Sub::Exporter 0.950 -setup => {
   exports => { tolerance => Sub::Exporter::Util::curry_class('new'), },
   groups  => { default   => [ qw(tolerance) ] },
 };
@@ -15,13 +15,237 @@ use Sub::Exporter -setup => {
 use Carp ();
 use Scalar::Util ();
 
+
+# these are the default plugins
+my %_plugins;
+
+sub _plugins {
+  keys %_plugins
+}
+
+sub disable_plugin {
+  my ($class, $plugin) = @_;
+  delete $_plugins{ $plugin };
+  return;
+}
+
+sub enable_plugin {
+  my ($class, $plugin) = @_;
+
+  # XXX: there has to be a better test to use here -- rjbs, 2006-01-27
+  unless (eval { $plugin->can('construct') }) {
+    eval "require $plugin" or die $@;
+  }
+
+  unless (eval { $class->validate_plugin($plugin); }) {
+    Carp::croak "class $class is not a valid Number::Tolerant plugin: $@";
+  }
+
+  $_plugins{ $plugin } = undef;
+  return;
+}
+
+sub validate_plugin {
+  my ($class, $plugin) = @_;
+  for (qw(parse valid_args construct)) {
+    die "can't $_" unless $plugin->can($_);
+  }
+  return 1;
+}
+
+my @_default_plugins = 
+  map { "Number::Tolerant::Type::$_" }
+  qw(
+    constant    infinite        less_than
+    more_than   offset          or_less 
+    or_more     plus_or_minus   plus_or_minus_pct
+    to
+  );
+
+__PACKAGE__->enable_plugin($_) for @_default_plugins;
+
+sub new {
+  my $class = shift;
+  return unless @_;
+  my $self;
+
+  for my $type ($class->_plugins) {
+    next unless my @args = $type->valid_args(@_);
+    my $guts = $type->construct(@args);
+
+    return $guts unless ref $guts and not Scalar::Util::blessed($guts);
+
+    if (
+      defined $guts->{min} and defined $guts->{max} and
+      $guts->{min} == $guts->{max} and
+      not $guts->{constant}
+    ) { 
+      @_ = ($class, $guts->{min});
+      goto &new;
+    }
+    $self = { method => $type, %$guts };
+    last;
+  }
+
+  Carp::confess("couldn't form tolerance from given args") unless $self;
+  bless $self => $self->{method};
+}
+
+
+sub from_string {
+  my ($class, $string) = @_;
+  Carp::croak "from_string is a class method" if ref $class;
+  for my $type (keys %_plugins) {
+    if (defined(my $tolerance = $type->parse($string, $class))) {
+      return $tolerance;
+    }
+  }
+
+  Carp::confess("couldn't form tolerance from given string");
+}
+
+sub stringify {
+  my ($self) = @_;
+
+  return 'any number' unless (defined $self->{min} || defined $self->{max});
+
+  my $string = '';
+
+  if (defined $self->{min}) {
+    $string .= "$self->{min} <" . ($self->{exclude_min} ? q{} : '=') . q{ };
+  }
+
+  $string .= 'x';
+
+  if (defined $self->{max}) {
+    $string .= ' <' . ($self->{exclude_max} ? q{} : '=') .  " $self->{max}";
+  }
+
+  return $string;
+}
+
+
+sub stringify_as { }
+
+
+sub numify {
+  # if a tolerance has equal min and max, it numifies to that number
+  return $_[0]{min}
+    if $_[0]{min} and $_[0]{max} and $_[0]{min} == $_[0]{max};
+  ## no critic (ReturnUndef)
+  return undef;
+}
+
+sub _num_eq  { not( _num_gt($_[0],$_[1]) or _num_lt($_[0],$_[1]) ) }
+
+sub _num_ne { not _num_eq(@_) }
+
+sub _num_gt  { $_[2] ? goto &_num_lt_canonical : goto &_num_gt_canonical }
+
+sub _num_lt  { $_[2] ? goto &_num_gt_canonical : goto &_num_lt_canonical }
+
+sub _num_gte { $_[1] == $_[0] ? 1 : goto &_num_gt; }
+
+sub _num_lte { $_[1] == $_[0] ? 1 : goto &_num_lt; }
+
+sub _num_gt_canonical {
+  return 1 if $_[0]{exclude_min} and $_[0]{min} == $_[1];
+  defined $_[0]->{min} ? $_[1] <  $_[0]->{min} : undef
+}
+
+sub _num_lt_canonical {
+  return 1 if $_[0]{exclude_max} and $_[0]{max} == $_[1];
+  defined $_[0]->{max} ? $_[1] >  $_[0]->{max} : undef
+}
+
+sub _union { $_[0]->union($_[1]); }
+
+sub union {
+  require Number::Tolerant::Union;
+  return Number::Tolerant::Union->new($_[0],$_[1]);
+}
+
+sub _intersection { $_[0]->intersection($_[1]); }
+
+sub intersection {
+  if (! ref $_[1]) {
+    return $_[1] if $_[0] == $_[1];
+    Carp::confess "no valid intersection of ($_[0]) and ($_[1])";
+  }
+
+  my ($min, $max);
+  my ($exclude_min, $exclude_max);
+
+  if (defined $_[0]->{min} and defined $_[1]->{min}) {
+    ($min) = sort {$b<=>$a}  ($_[0]->{min}, $_[1]->{min});
+  } else {
+    $min = $_[0]->{min} || $_[1]->{min};
+  }
+
+  $exclude_min = 1
+    if ($_[0]{min} and $min == $_[0]{min} and $_[0]{exclude_min})
+    or ($_[1]{min} and $min == $_[1]{min} and $_[1]{exclude_min});
+
+  if (defined $_[0]->{max} and defined $_[1]->{max}) {
+    ($max) = sort {$a<=>$b} ($_[0]->{max}, $_[1]->{max});
+  } else {
+    $max = $_[0]->{max} || $_[1]->{max};
+  }
+
+  $exclude_max = 1
+    if ($_[0]{max} and $max == $_[0]{max} and $_[0]{exclude_max})
+    or ($_[1]{max} and $max == $_[1]{max} and $_[1]{exclude_max});
+
+  return $_[0]->new('infinite') unless defined $min || defined $max;
+
+  return $_[0]->new($min => ($exclude_min ? 'more_than' : 'or_more'))
+    unless defined $max;
+
+  return $_[0]->new($max => ($exclude_max ? 'less_than' : 'or_less'))
+    unless defined $min;
+
+  Carp::confess "no valid intersection of ($_[0]) and ($_[1])"
+    if $max < $min or $min > $max;
+
+  bless {
+    max => $max,
+    min => $min,
+    exclude_max => $exclude_max,
+    exclude_min => $exclude_min
+  } => 'Number::Tolerant::Type::to';
+}
+
+
+use overload
+  fallback => 1,
+  'bool'   => sub { 1 },
+  '0+'     => 'numify',
+  '<=>' => sub {
+    $_[2] ? ($_[1] <=> $_[0]->{value}) : ($_[0]->{value} <=> $_[1])
+  },
+  '""' => 'stringify',
+  '==' => '_num_eq',
+  '!=' => '_num_ne',
+  '>'  => '_num_gt',
+  '<'  => '_num_lt',
+  '>=' => '_num_gte',
+  '<=' => '_num_lte',
+  '|'  => '_union',
+  '&'  => '_intersection';
+
+
+"1 +/- 0";
+
+__END__
+=pod
+
 =head1 NAME
 
 Number::Tolerant - tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.700
+version 1.701
 
 =head1 SYNOPSIS
 
@@ -100,83 +324,6 @@ The first will sort as numerically less than the second.
 If the given arguments can't be formed into a tolerance, an exception will be
 raised.
 
-=cut
-
-# these are the default plugins
-my %_plugins;
-
-sub _plugins {
-  keys %_plugins
-}
-
-sub disable_plugin {
-  my ($class, $plugin) = @_;
-  delete $_plugins{ $plugin };
-  return;
-}
-
-sub enable_plugin {
-  my ($class, $plugin) = @_;
-
-  # XXX: there has to be a better test to use here -- rjbs, 2006-01-27
-  unless (eval { $plugin->can('construct') }) {
-    eval "require $plugin" or die $@;
-  }
-
-  unless (eval { $class->validate_plugin($plugin); }) {
-    Carp::croak "class $class is not a valid Number::Tolerant plugin: $@";
-  }
-
-  $_plugins{ $plugin } = undef;
-  return;
-}
-
-sub validate_plugin {
-  my ($class, $plugin) = @_;
-  for (qw(parse valid_args construct)) {
-    die "can't $_" unless $plugin->can($_);
-  }
-  return 1;
-}
-
-my @_default_plugins = 
-  map { "Number::Tolerant::Type::$_" }
-  qw(
-    constant    infinite        less_than
-    more_than   offset          or_less 
-    or_more     plus_or_minus   plus_or_minus_pct
-    to
-  );
-
-__PACKAGE__->enable_plugin($_) for @_default_plugins;
-
-sub new {
-  my $class = shift;
-  return unless @_;
-  my $self;
-
-  for my $type ($class->_plugins) {
-    next unless my @args = $type->valid_args(@_);
-    my $guts = $type->construct(@args);
-
-    return $guts unless ref $guts and not Scalar::Util::blessed($guts);
-
-    if (
-      defined $guts->{min} and defined $guts->{max} and
-      $guts->{min} == $guts->{max} and
-      not $guts->{constant}
-    ) { 
-      @_ = ($class, $guts->{min});
-      goto &new;
-    }
-    $self = { method => $type, %$guts };
-    last;
-  }
-
-  Carp::confess("couldn't form tolerance from given args") unless $self;
-  bless $self => $self->{method};
-}
-
 =head3 from_string
 
 A new tolerance can be instantiated from the stringification of an old
@@ -191,40 +338,6 @@ the future.  (I just don't need it yet.)
 
 If a string can't be parsed, an exception is raised.
 
-=cut
-
-sub from_string {
-  my ($class, $string) = @_;
-  Carp::croak "from_string is a class method" if ref $class;
-  for my $type (keys %_plugins) {
-    if (defined(my $tolerance = $type->parse($string, $class))) {
-      return $tolerance;
-    }
-  }
-
-  Carp::confess("couldn't form tolerance from given string");
-}
-
-sub stringify {
-  my ($self) = @_;
-
-  return 'any number' unless (defined $self->{min} || defined $self->{max});
-
-  my $string = '';
-
-  if (defined $self->{min}) {
-    $string .= "$self->{min} <" . ($self->{exclude_min} ? q{} : '=') . q{ };
-  }
-
-  $string .= 'x';
-
-  if (defined $self->{max}) {
-    $string .= ' <' . ($self->{exclude_max} ? q{} : '=') .  " $self->{max}";
-  }
-
-  return $string;
-}
-
 =head2 stringify_as
 
   my $string = $tolerance->stringify_as($type);
@@ -233,10 +346,6 @@ This method does nothing!  Someday, it will stringify the given tolerance as a
 different type, if possible.  "10 +/- 1" will
 C<stringify_as('plus_or_minus_pct')> to "10 +/- 10%" for example.
 
-=cut
-
-sub stringify_as { }
-
 =head2 numify
 
   my $n = $tolerance->numify;
@@ -244,91 +353,6 @@ sub stringify_as { }
 This returns the numeric form of a tolerance.  If a tolerance has both a
 minimum and a maximum, and they are the same, then that is the numification.
 Otherwise, numify returns undef.
-
-=cut
-
-sub numify {
-  # if a tolerance has equal min and max, it numifies to that number
-  return $_[0]{min}
-    if $_[0]{min} and $_[0]{max} and $_[0]{min} == $_[0]{max};
-  ## no critic (ReturnUndef)
-  return undef;
-}
-
-sub _num_eq  { not( _num_gt($_[0],$_[1]) or _num_lt($_[0],$_[1]) ) }
-
-sub _num_ne { not _num_eq(@_) }
-
-sub _num_gt  { $_[2] ? goto &_num_lt_canonical : goto &_num_gt_canonical }
-
-sub _num_lt  { $_[2] ? goto &_num_gt_canonical : goto &_num_lt_canonical }
-
-sub _num_gte { $_[1] == $_[0] ? 1 : goto &_num_gt; }
-
-sub _num_lte { $_[1] == $_[0] ? 1 : goto &_num_lt; }
-
-sub _num_gt_canonical {
-  return 1 if $_[0]{exclude_min} and $_[0]{min} == $_[1];
-  defined $_[0]->{min} ? $_[1] <  $_[0]->{min} : undef
-}
-
-sub _num_lt_canonical {
-  return 1 if $_[0]{exclude_max} and $_[0]{max} == $_[1];
-  defined $_[0]->{max} ? $_[1] >  $_[0]->{max} : undef
-}
-
-sub _union {
-  require Number::Tolerant::Union;
-  return Number::Tolerant::Union->new($_[0],$_[1]);
-}
-
-sub _intersection {
-  if (! ref $_[1]) {
-    return $_[1] if $_[0] == $_[1];
-    Carp::confess "no valid intersection of ($_[0]) and ($_[1])";
-  }
-
-  my ($min, $max);
-  my ($exclude_min, $exclude_max);
-
-  if (defined $_[0]->{min} and defined $_[1]->{min}) {
-    ($min) = sort {$b<=>$a}  ($_[0]->{min}, $_[1]->{min});
-  } else {
-    $min = $_[0]->{min} || $_[1]->{min};
-  }
-
-  $exclude_min = 1
-    if ($_[0]{min} and $min == $_[0]{min} and $_[0]{exclude_min})
-    or ($_[1]{min} and $min == $_[1]{min} and $_[1]{exclude_min});
-
-  if (defined $_[0]->{max} and defined $_[1]->{max}) {
-    ($max) = sort {$a<=>$b} ($_[0]->{max}, $_[1]->{max});
-  } else {
-    $max = $_[0]->{max} || $_[1]->{max};
-  }
-
-  $exclude_max = 1
-    if ($_[0]{max} and $max == $_[0]{max} and $_[0]{exclude_max})
-    or ($_[1]{max} and $max == $_[1]{max} and $_[1]{exclude_max});
-
-  return $_[0]->new('infinite') unless defined $min || defined $max;
-
-  return $_[0]->new($min => ($exclude_min ? 'more_than' : 'or_more'))
-    unless defined $max;
-
-  return $_[0]->new($max => ($exclude_max ? 'less_than' : 'or_less'))
-    unless defined $min;
-
-  Carp::confess "no valid intersection of ($_[0]) and ($_[1])"
-    if $max < $min or $min > $max;
-
-  bless {
-    max => $max,
-    min => $min,
-    exclude_max => $exclude_max,
-    exclude_min => $exclude_min
-  } => 'Number::Tolerant::Type::to';
-}
 
 =head2 Overloading
 
@@ -396,25 +420,6 @@ the tolerance.
 A tolerance C<|> a tolerance or number is the union of the two.  Unions allow
 multiple tolerances, whether they intersect or not, to be treated as one.  See
 L<Number::Tolerant::Union> for more information.
-
-=cut
-
-use overload
-  fallback => 1,
-  'bool'   => sub { 1 },
-  '0+'     => 'numify',
-  '<=>' => sub {
-    $_[2] ? ($_[1] <=> $_[0]->{value}) : ($_[0]->{value} <=> $_[1])
-  },
-  '""' => 'stringify',
-  '==' => '_num_eq',
-  '!=' => '_num_ne',
-  '>'  => '_num_gt',
-  '<'  => '_num_lt',
-  '>=' => '_num_gte',
-  '<=' => '_num_lte',
-  '|'  => '_union',
-  '&'  => '_intersection';
 
 =back
 
@@ -504,13 +509,14 @@ also provided the initial implementation for the offset type.
 
 =head1 AUTHOR
 
-Ricardo SIGNES, E<lt>rjbs@cpan.orgE<gt>
+Ricardo Signes <rjbs@cpan.org>
 
-=head1 COPYRIGHT
+=head1 COPYRIGHT AND LICENSE
 
-(C) 2004-2006, Ricardo SIGNES.  Number::Tolerant is available under the same
-terms as Perl itself.
+This software is copyright (c) 2004 by Ricardo Signes.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-"1 +/- 0";

@@ -1,13 +1,63 @@
 use strict;
 use warnings;
-
 package Number::Tolerant::Type;
+BEGIN {
+  $Number::Tolerant::Type::VERSION = '1.701';
+}
 use base qw(Number::Tolerant);
+# ABSTRACT: a type of tolerance
 
 use Math::BigFloat;
 use Math::BigRat;
 
-our $VERSION = "1.700";
+
+
+my $number;
+BEGIN {
+  $number = qr{
+    (?:
+      (?:[+-]?)
+      (?=[0-9]|\.[0-9])
+      [0-9]*
+      (?:\.[0-9]*)?
+      (?:[Ee](?:[+-]?[0-9]+))?
+    )
+    |
+    (?:
+      [0-9]+ / [1-9][0-9]*
+    )
+  }x;
+}
+
+sub number_re { return $number; }
+
+sub normalize_number {
+  my ($self, $input) = @_;
+
+  return if not defined $input;
+  
+  if ($input =~ qr{\A$number\z}) {
+    return $input =~ m{/} ? Math::BigRat->new($input) : $input;
+    # my $class = $input =~ m{/} ? 'Math::BigRat' : 'Math::BigRat';
+    # return $class->new($input);
+  }
+
+  local $@;
+  return $input if ref $input and eval { $input->isa('Math::BigInt') };
+
+  return;
+}
+
+
+my $X;
+BEGIN { $X =  qr/(?:\s*x\s*)/; }
+
+sub variable_re { return $X; }
+
+1;
+
+__END__
+=pod
 
 =head1 NAME
 
@@ -15,11 +65,9 @@ Number::Tolerant::Type - a type of tolerance
 
 =head1 VERSION
 
-version 1.700
+version 1.701
 
 =head1 SYNOPSIS
-
-=cut
 
 =head1 METHODS
 
@@ -63,44 +111,6 @@ Strings that appears to be fractions are converted to Math::BigRat objects.
 
 Anything else is considered invalid, and the method will return false.
 
-=cut
-
-my $number;
-BEGIN {
-  $number = qr{
-    (?:
-      (?:[+-]?)
-      (?=[0-9]|\.[0-9])
-      [0-9]*
-      (?:\.[0-9]*)?
-      (?:[Ee](?:[+-]?[0-9]+))?
-    )
-    |
-    (?:
-      [0-9]+ / [1-9][0-9]*
-    )
-  }x;
-}
-
-sub number_re { return $number; }
-
-sub normalize_number {
-  my ($self, $input) = @_;
-
-  return if not defined $input;
-  
-  if ($input =~ qr{\A$number\z}) {
-    return $input =~ m{/} ? Math::BigRat->new($input) : $input;
-    # my $class = $input =~ m{/} ? 'Math::BigRat' : 'Math::BigRat';
-    # return $class->new($input);
-  }
-
-  local $@;
-  return $input if ref $input and eval { $input->isa('Math::BigInt') };
-
-  return;
-}
-
 =head2 variable_re
 
   my $variable_re = $type_class->variable_re;
@@ -111,30 +121,16 @@ the variable in parsed strings.
 When parsing "4 <= x <= 10" this regular expression is used to match the letter
 "x."
 
-=cut
-
-my $X;
-BEGIN { $X =  qr/(?:\s*x\s*)/; }
-
-sub variable_re { return $X; }
-
-=head1 SEE ALSO
-
-=over 4
-
-=item * L<Number::Tolerant>
-
-=back
-
 =head1 AUTHOR
 
-Ricardo SIGNES, E<lt>rjbs@cpan.orgE<gt>
+Ricardo Signes <rjbs@cpan.org>
 
-=head1 COPYRIGHT
+=head1 COPYRIGHT AND LICENSE
 
-(C) 2004-2006, Ricardo SIGNES.  Number::Tolerant is available under the same
-terms as Perl itself.
+This software is copyright (c) 2004 by Ricardo Signes.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-1;

@@ -1,10 +1,9 @@
 use strict;
 use warnings;
 
-package Number::Tolerant::Type::more_than;
+package
+  Number::Tolerant::Type::more_than;
 use base qw(Number::Tolerant::Type);
-
-our $VERSION = '1.700';
 
 sub construct { shift; { value => $_[0], min => $_[0], exclude_min => 1 } }
 
@@ -40,3 +39,28 @@ sub valid_args {
 }
 
 1;
+
+__END__
+=pod
+
+=head1 NAME
+
+Number::Tolerant::Type::more_than
+
+=head1 VERSION
+
+version 1.701
+
+=head1 AUTHOR
+
+Ricardo Signes <rjbs@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2004 by Ricardo Signes.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+

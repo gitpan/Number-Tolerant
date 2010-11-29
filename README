@@ -1,21 +1,13 @@
-README for Number::Tolerant 1.700
 
-Number::Tolerant creates a number-like object whose value refers to a range of
-possible values, each equally acceptable. It overloads comparison operations to
-reflect this.
 
- use Number::Tolerant;
+This archive contains the distribution Number-Tolerant,
+version 1.701:
 
- my $range  = tolerance(10 => to => 12);
- my $random = 10 + rand(2);
+  tolerance ranges for inexact numbers
 
- die "I shouldn't die" unless $random == $range;
+This software is copyright (c) 2004 by Ricardo Signes.
 
- print "This line will always print.\n";
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
-I use this module to simplify the comparison of measurement results to
-specified tolerances.
 
- foreach ($specification->attributes) {
-   reject $product unless $product->$_ == $specification->$_;
- }

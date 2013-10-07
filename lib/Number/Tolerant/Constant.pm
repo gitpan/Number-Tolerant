@@ -1,15 +1,15 @@
 use strict;
 use warnings;
 package Number::Tolerant::Constant;
-BEGIN {
-  $Number::Tolerant::Constant::VERSION = '1.701';
+{
+  $Number::Tolerant::Constant::VERSION = '1.702';
 }
 # ABSTRACT: a blessed constant type
 
 
 package
   Number::Tolerant::Type::constant_obj;
-use base qw(Number::Tolerant::Type);
+use parent qw(Number::Tolerant::Type);
 
 sub construct { shift;
   { value => $_[0], min => $_[0], max => $_[0], constant => 1 }
@@ -52,6 +52,7 @@ sub _disable {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -60,7 +61,7 @@ Number::Tolerant::Constant - a blessed constant type
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 SYNOPSIS
 
@@ -91,4 +92,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

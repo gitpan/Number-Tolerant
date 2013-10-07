@@ -1,9 +1,10 @@
 use strict;
 use warnings;
+# ABSTRACT: a tolerance "m < n"
 
 package
   Number::Tolerant::Type::less_than;
-use base qw(Number::Tolerant::Type);
+use parent qw(Number::Tolerant::Type);
 
 sub construct { shift; { value => $_[0], max => $_[0], exclude_max => 1 } }
 
@@ -41,15 +42,16 @@ sub valid_args {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
 
-Number::Tolerant::Type::less_than
+Number::Tolerant::Type::less_than - a tolerance "m < n"
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 AUTHOR
 
@@ -63,4 +65,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

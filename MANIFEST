@@ -21,7 +21,8 @@ lib/Number/Tolerant/Type/plus_or_minus_pct.pm
 lib/Number/Tolerant/Type/to.pm
 lib/Number/Tolerant/Union.pm
 lib/Test/Tolerant.pm
-t/00-load.t
+t/00-compile.t
+t/000-report-versions-tiny.t
 t/and_constant.t
 t/and_tolerance.t
 t/bad_method.t
@@ -39,7 +40,6 @@ t/plusminus.t
 t/plusminus_0.t
 t/plusminus_pct.t
 t/plusminus_pct_0.t
-t/release-pod-syntax.t
 t/stringify_as.t
 t/test.t
 t/union.t
@@ -48,3 +48,5 @@ t/union_more.t
 t/x_to_x.t
 t/x_to_y.t
 t/y_to_x.t
+xt/release/changes_has_content.t
+xt/release/pod-syntax.t

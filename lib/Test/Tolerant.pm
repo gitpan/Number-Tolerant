@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 package Test::Tolerant;
-BEGIN {
-  $Test::Tolerant::VERSION = '1.701';
+{
+  $Test::Tolerant::VERSION = '1.702';
 }
 # ABSTRACT: test routines for testing numbers against tolerances
 
@@ -53,6 +53,7 @@ sub is_tol {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -61,7 +62,7 @@ Test::Tolerant - test routines for testing numbers against tolerances
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 SYNOPSIS
 
@@ -111,4 +112,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

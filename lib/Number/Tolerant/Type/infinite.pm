@@ -1,9 +1,10 @@
 use strict;
 use warnings;
+# ABSTRACT: an infinite tolerance
 
 package
   Number::Tolerant::Type::infinite;
-use base qw(Number::Tolerant::Type);
+use parent qw(Number::Tolerant::Type);
 
 sub construct { shift; { value => 0 } }
 
@@ -21,15 +22,16 @@ sub valid_args { shift;
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
 
-Number::Tolerant::Type::infinite
+Number::Tolerant::Type::infinite - an infinite tolerance
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 AUTHOR
 
@@ -43,4 +45,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

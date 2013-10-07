@@ -1,13 +1,14 @@
 use strict;
 use warnings;
+# ABSTRACT: a tolerance "m >= n"
 
 package
   Number::Tolerant::Type::or_more;
-use base qw(Number::Tolerant::Type);
+use parent qw(Number::Tolerant::Type);
 
 sub construct { shift; { value => $_[0], min => $_[0] } }
 
-sub parse { 
+sub parse {
   my ($self, $string, $factory) = @_;
   my $number = $self->number_re;
   my $X = $self->variable_re;
@@ -32,15 +33,16 @@ sub valid_args {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
 
-Number::Tolerant::Type::or_more
+Number::Tolerant::Type::or_more - a tolerance "m >= n"
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 AUTHOR
 
@@ -54,4 +56,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

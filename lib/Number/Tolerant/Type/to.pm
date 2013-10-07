@@ -1,9 +1,10 @@
 use strict;
 use warnings;
+# ABSTRACT: a tolerance "m to n"
 
 package
   Number::Tolerant::Type::to;
-use base qw(Number::Tolerant::Type);
+use parent qw(Number::Tolerant::Type);
 
 sub construct { shift;
   ($_[0],$_[1]) = sort { $a <=> $b } ($_[0],$_[1]);
@@ -44,15 +45,16 @@ sub valid_args {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
 
-Number::Tolerant::Type::to
+Number::Tolerant::Type::to - a tolerance "m to n"
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 AUTHOR
 
@@ -66,4 +68,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 package Number::Tolerant::Union;
-BEGIN {
-  $Number::Tolerant::Union::VERSION = '1.701';
+{
+  $Number::Tolerant::Union::VERSION = '1.702';
 }
 # ABSTRACT: unions of tolerance ranges
 
@@ -53,6 +53,7 @@ use overload
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -61,7 +62,7 @@ Number::Tolerant::Union - unions of tolerance ranges
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 SYNOPSIS
 
@@ -159,4 +160,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

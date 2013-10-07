@@ -1,5 +1,12 @@
 Revision history for Number::Tolerant
 
+1.702     2013-10-07 10:22:17 America/New_York
+          update bugtracker
+
+          avoid circular loading problems (with a nasty hack)
+
+          fix spelling error; thanks, Alexandre Mestiashvili!
+
 1.701   2010-11-29
 
         include Test::Tolerant

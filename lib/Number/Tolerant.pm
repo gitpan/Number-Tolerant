@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 package Number::Tolerant;
-BEGIN {
-  $Number::Tolerant::VERSION = '1.701';
+{
+  $Number::Tolerant::VERSION = '1.702';
 }
 # ABSTRACT: tolerance ranges for inexact numbers
 
@@ -25,12 +25,14 @@ sub _plugins {
 
 sub disable_plugin {
   my ($class, $plugin) = @_;
+  $class->_boot_up;
   delete $_plugins{ $plugin };
   return;
 }
 
 sub enable_plugin {
   my ($class, $plugin) = @_;
+  $class->_boot_up;
 
   # XXX: there has to be a better test to use here -- rjbs, 2006-01-27
   unless (eval { $plugin->can('construct') }) {
@@ -38,7 +40,7 @@ sub enable_plugin {
   }
 
   unless (eval { $class->validate_plugin($plugin); }) {
-    Carp::croak "class $class is not a valid Number::Tolerant plugin: $@";
+    Carp::croak "class $plugin is not a valid Number::Tolerant plugin: $@";
   }
 
   $_plugins{ $plugin } = undef;
@@ -53,19 +55,25 @@ sub validate_plugin {
   return 1;
 }
 
-my @_default_plugins = 
-  map { "Number::Tolerant::Type::$_" }
-  qw(
-    constant    infinite        less_than
-    more_than   offset          or_less 
-    or_more     plus_or_minus   plus_or_minus_pct
-    to
-  );
+my $booted;
+sub _boot_up {
+  return if $booted;
+  $booted = 1;
+  my @_default_plugins =
+    map { "Number::Tolerant::Type::$_" }
+    qw(
+      constant    infinite        less_than
+      more_than   offset          or_less 
+      or_more     plus_or_minus   plus_or_minus_pct
+      to
+    );
 
-__PACKAGE__->enable_plugin($_) for @_default_plugins;
+  __PACKAGE__->enable_plugin($_) for @_default_plugins;
+}
 
 sub new {
   my $class = shift;
+  $class->_boot_up;
   return unless @_;
   my $self;
 
@@ -94,6 +102,7 @@ sub new {
 
 sub from_string {
   my ($class, $string) = @_;
+  $class->_boot_up;
   Carp::croak "from_string is a class method" if ref $class;
   for my $type (keys %_plugins) {
     if (defined(my $tolerance = $type->parse($string, $class))) {
@@ -237,6 +246,7 @@ use overload
 "1 +/- 0";
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -245,7 +255,7 @@ Number::Tolerant - tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 SYNOPSIS
 
@@ -285,7 +295,7 @@ Number::Tolerant class.  Both use the same syntax:
 
  my $range = tolerance( $x => $method => $y);
 
-The meaning of C<$x> and C<$y> are dependant on the value of C<$method>, which
+The meaning of C<$x> and C<$y> are dependent on the value of C<$method>, which
 describes the nature of the tolerance.  Tolerances can be defined in five ways,
 at present:
 
@@ -519,4 +529,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

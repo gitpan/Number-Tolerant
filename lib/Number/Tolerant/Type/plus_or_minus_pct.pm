@@ -1,9 +1,10 @@
 use strict;
 use warnings;
+# ABSTRACT: a tolerance "m +/- n%"
 
 package
   Number::Tolerant::Type::plus_or_minus_pct;
-use base qw(Number::Tolerant::Type);
+use parent qw(Number::Tolerant::Type);
 
 sub construct { shift;
   {
@@ -40,15 +41,16 @@ sub valid_args {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
 
-Number::Tolerant::Type::plus_or_minus_pct
+Number::Tolerant::Type::plus_or_minus_pct - a tolerance "m +/- n%"
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 AUTHOR
 
@@ -62,4 +64,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

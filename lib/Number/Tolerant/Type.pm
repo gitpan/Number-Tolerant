@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 package Number::Tolerant::Type;
-BEGIN {
-  $Number::Tolerant::Type::VERSION = '1.701';
+{
+  $Number::Tolerant::Type::VERSION = '1.702';
 }
-use base qw(Number::Tolerant);
+use parent qw(Number::Tolerant);
 # ABSTRACT: a type of tolerance
 
 use Math::BigFloat;
@@ -57,6 +57,7 @@ sub variable_re { return $X; }
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -65,7 +66,7 @@ Number::Tolerant::Type - a type of tolerance
 
 =head1 VERSION
 
-version 1.701
+version 1.702
 
 =head1 SYNOPSIS
 
@@ -133,4 +134,3 @@ This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

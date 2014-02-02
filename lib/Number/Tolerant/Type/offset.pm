@@ -55,13 +55,15 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Number::Tolerant::Type::offset - a tolerance "m (-l or +n)"
 
 =head1 VERSION
 
-version 1.702
+version 1.703
 
 =head1 AUTHOR
 

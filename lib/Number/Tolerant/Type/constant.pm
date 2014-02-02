@@ -31,13 +31,15 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Number::Tolerant::Type::constant - a tolerance "m == n"
 
 =head1 VERSION
 
-version 1.702
+version 1.703
 
 =head1 AUTHOR
 

@@ -50,9 +50,6 @@ sub pmver {
 
 eval { $v .= pmver('Carp','any version') };
 eval { $v .= pmver('ExtUtils::MakeMaker','6.30') };
-eval { $v .= pmver('File::Spec','any version') };
-eval { $v .= pmver('IO::Handle','any version') };
-eval { $v .= pmver('IPC::Open3','any version') };
 eval { $v .= pmver('Math::BigFloat','any version') };
 eval { $v .= pmver('Math::BigRat','any version') };
 eval { $v .= pmver('Scalar::Util','any version') };
@@ -62,6 +59,8 @@ eval { $v .= pmver('Test::Builder','any version') };
 eval { $v .= pmver('Test::More','0.96') };
 eval { $v .= pmver('Test::Tester','any version') };
 eval { $v .= pmver('base','any version') };
+eval { $v .= pmver('feature','any version') };
+eval { $v .= pmver('if','any version') };
 eval { $v .= pmver('overload','any version') };
 eval { $v .= pmver('parent','any version') };
 eval { $v .= pmver('strict','any version') };

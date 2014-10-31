@@ -2,25 +2,25 @@ use strict;
 use warnings;
 package Number::Tolerant::Constant;
 # ABSTRACT: a blessed constant type
-$Number::Tolerant::Constant::VERSION = '1.703';
-# =head1 SYNOPSIS
-#
-#  use Number::Tolerant;
-#  use Number::Tolerant::Constant;
-#
-#  my $range  = tolerance(10);
-#  ref $range; # "Number::Tolerant" -- w/o ::Constant, would be undef
-#
-# =head1 DESCRIPTION
-#
-# When Number::Tolerant is about to return a tolerance with zero variation, it
-# will return a constant instead.  This module will register a constant type that
-# will catch these constants and return them as Number::Tolerant objects.
-#
-# I wrote this module to make it simpler to use tolerances with Class::DBI, which
-# would otherwise complain that the constructor hadn't returned a blessed object.
-#
-# =cut
+$Number::Tolerant::Constant::VERSION = '1.704';
+#pod =head1 SYNOPSIS
+#pod
+#pod  use Number::Tolerant;
+#pod  use Number::Tolerant::Constant;
+#pod
+#pod  my $range  = tolerance(10);
+#pod  ref $range; # "Number::Tolerant" -- w/o ::Constant, would be undef
+#pod
+#pod =head1 DESCRIPTION
+#pod
+#pod When Number::Tolerant is about to return a tolerance with zero variation, it
+#pod will return a constant instead.  This module will register a constant type that
+#pod will catch these constants and return them as Number::Tolerant objects.
+#pod
+#pod I wrote this module to make it simpler to use tolerances with Class::DBI, which
+#pod would otherwise complain that the constructor hadn't returned a blessed object.
+#pod
+#pod =cut
 
 package
   Number::Tolerant::Type::constant_obj;
@@ -78,7 +78,7 @@ Number::Tolerant::Constant - a blessed constant type
 
 =head1 VERSION
 
-version 1.703
+version 1.704
 
 =head1 SYNOPSIS
 

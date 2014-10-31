@@ -33,7 +33,7 @@ Number::Tolerant::Type::infinite - an infinite tolerance
 
 =head1 VERSION
 
-version 1.703
+version 1.704
 
 =head1 AUTHOR
 

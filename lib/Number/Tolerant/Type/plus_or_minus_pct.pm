@@ -52,7 +52,7 @@ Number::Tolerant::Type::plus_or_minus_pct - a tolerance "m +/- n%"
 
 =head1 VERSION
 
-version 1.703
+version 1.704
 
 =head1 AUTHOR
 

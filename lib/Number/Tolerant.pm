@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Number::Tolerant;
 # ABSTRACT: tolerance ranges for inexact numbers
-$Number::Tolerant::VERSION = '1.704';
+$Number::Tolerant::VERSION = '1.705';
 use Sub::Exporter::Util;
 use Sub::Exporter 0.950 -setup => {
   exports => { tolerance => Sub::Exporter::Util::curry_class('new'), },
@@ -525,7 +525,7 @@ Number::Tolerant - tolerance ranges for inexact numbers
 
 =head1 VERSION
 
-version 1.704
+version 1.705
 
 =head1 SYNOPSIS
 

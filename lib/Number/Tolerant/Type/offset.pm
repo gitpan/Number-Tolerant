@@ -63,7 +63,7 @@ Number::Tolerant::Type::offset - a tolerance "m (-l or +n)"
 
 =head1 VERSION
 
-version 1.704
+version 1.705
 
 =head1 AUTHOR
 

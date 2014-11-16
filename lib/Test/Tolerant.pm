@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Test::Tolerant;
 # ABSTRACT: test routines for testing numbers against tolerances
-$Test::Tolerant::VERSION = '1.704';
+$Test::Tolerant::VERSION = '1.705';
 #pod =head1 SYNOPSIS
 #pod
 #pod   use Test::More;
@@ -17,7 +17,7 @@ $Test::Tolerant::VERSION = '1.704';
 #pod
 #pod =head2 is_tol
 #pod
-#pod   is_tol($want, $have_spec, $comment);
+#pod   is_tol($have, $want_spec, $comment);
 #pod
 #pod C<is_tol> is the only routine provided by Test::Tolerant, and is exported by
 #pod default.  It beahves like C<L<is|Test::More/is>> from Test::More, asserting
@@ -98,7 +98,7 @@ Test::Tolerant - test routines for testing numbers against tolerances
 
 =head1 VERSION
 
-version 1.704
+version 1.705
 
 =head1 SYNOPSIS
 
@@ -114,7 +114,7 @@ version 1.704
 
 =head2 is_tol
 
-  is_tol($want, $have_spec, $comment);
+  is_tol($have, $want_spec, $comment);
 
 C<is_tol> is the only routine provided by Test::Tolerant, and is exported by
 default.  It beahves like C<L<is|Test::More/is>> from Test::More, asserting

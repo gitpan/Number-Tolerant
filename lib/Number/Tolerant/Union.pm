@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Number::Tolerant::Union;
 # ABSTRACT: unions of tolerance ranges
-$Number::Tolerant::Union::VERSION = '1.704';
+$Number::Tolerant::Union::VERSION = '1.705';
 #pod =head1 SYNOPSIS
 #pod
 #pod  use Number::Tolerant;
@@ -149,7 +149,7 @@ Number::Tolerant::Union - unions of tolerance ranges
 
 =head1 VERSION
 
-version 1.704
+version 1.705
 
 =head1 SYNOPSIS
 

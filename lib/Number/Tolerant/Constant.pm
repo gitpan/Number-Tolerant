@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Number::Tolerant::Constant;
 # ABSTRACT: a blessed constant type
-$Number::Tolerant::Constant::VERSION = '1.704';
+$Number::Tolerant::Constant::VERSION = '1.705';
 #pod =head1 SYNOPSIS
 #pod
 #pod  use Number::Tolerant;
@@ -78,7 +78,7 @@ Number::Tolerant::Constant - a blessed constant type
 
 =head1 VERSION
 
-version 1.704
+version 1.705
 
 =head1 SYNOPSIS
 

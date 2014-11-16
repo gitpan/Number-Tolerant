@@ -56,7 +56,7 @@ Number::Tolerant::Type::to - a tolerance "m to n"
 
 =head1 VERSION
 
-version 1.704
+version 1.705
 
 =head1 AUTHOR
 

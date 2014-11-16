@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Number::Tolerant::Type;
 # ABSTRACT: a type of tolerance
-$Number::Tolerant::Type::VERSION = '1.704';
+$Number::Tolerant::Type::VERSION = '1.705';
 use parent qw(Number::Tolerant);
 use Math::BigFloat;
 use Math::BigRat;
@@ -122,7 +122,7 @@ Number::Tolerant::Type - a type of tolerance
 
 =head1 VERSION
 
-version 1.704
+version 1.705
 
 =head1 SYNOPSIS
 
